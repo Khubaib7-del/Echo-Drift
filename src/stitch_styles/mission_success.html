@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ECHO DRIFT - SYNCHRONIZATION COMPLETE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#1b1b20",
+                        "secondary-container": "#45456d",
+                        "on-primary": "#00363a",
+                        "on-secondary-fixed": "#17173d",
+                        "surface-container-high": "#2a292f",
+                        "tertiary-fixed": "#ffd7f5",
+                        "on-secondary-fixed-variant": "#43436b",
+                        "inverse-surface": "#e4e1e9",
+                        "on-error": "#690005",
+                        "on-secondary-container": "#b5b4e3",
+                        "primary-fixed": "#7df4ff",
+                        "secondary-fixed": "#e2dfff",
+                        "error-container": "#93000a",
+                        "surface-bright": "#39383e",
+                        "primary": "#dbfcff",
+                        "on-background": "#e4e1e9",
+                        "surface": "#131318",
+                        "secondary-fixed-dim": "#c3c2f2",
+                        "on-primary-fixed-variant": "#004f54",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#002022",
+                        "surface-container-lowest": "#0e0e13",
+                        "surface-variant": "#35343a",
+                        "tertiary": "#fff3f9",
+                        "on-tertiary-fixed-variant": "#810081",
+                        "primary-fixed-dim": "#00dbe9",
+                        "outline-variant": "#3b494b",
+                        "primary-container": "#00f0ff",
+                        "on-surface-variant": "#b9cacb",
+                        "on-primary-container": "#006970",
+                        "tertiary-fixed-dim": "#ffabf3",
+                        "outline": "#849495",
+                        "background": "#131318",
+                        "on-secondary": "#2c2c53",
+                        "surface-tint": "#00dbe9",
+                        "inverse-primary": "#006970",
+                        "on-surface": "#e4e1e9",
+                        "surface-container-highest": "#35343a",
+                        "surface-container": "#1f1f25",
+                        "secondary": "#c3c2f2",
+                        "inverse-on-surface": "#303036",
+                        "tertiary-container": "#ffc9f4",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#380038",
+                        "surface-dim": "#131318",
+                        "on-tertiary": "#5b005b",
+                        "on-tertiary-container": "#a900a9"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Space Grotesk"]
+                    },
+                    borderRadius: { "DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .glitch-jitter {
+            animation: jitter 0.2s infinite;
+        }
+        @keyframes jitter {
+            0% { transform: translate(0); }
+            25% { transform: translate(-2px, 2px); }
+            50% { transform: translate(2px, -2px); }
+            75% { transform: translate(-1px, -1px); }
+            100% { transform: translate(0); }
+        }
+        .clip-slant {
+            clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+        }
+        .clip-slant-rev {
+            clip-path: polygon(5% 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        .glass-panel {
+            background: rgba(53, 52, 58, 0.4);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container overflow-hidden h-screen w-screen relative">
+<!-- Blurred Gameplay Background Layer -->
+<div class="fixed inset-0 z-0">
+<img class="w-full h-full object-cover filter blur-xl brightness-[0.3] scale-110" data-alt="abstract sci-fi landscape with glowing neon conduits and digital artifacts in deep cyan and magenta tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_zqBcwuqzqLI6bMSJNs_aCyZVEQ01mwy2BP6cO-ZDG9P8svthff_FJZtVgZR4clKuDSxVm8mX2tu3yjzOX6GvQ0H3qukmxWK1goD1F5xFhHH5wjVZt46oyycfr9-lLeJOEJ1Jv8YKFGeTL74jPh8t5ggzlbk7LnNqPYWC1ulCN508rq3ht3Ku4Y6gnbdVjAJxq36c36TDUJNszhyhQKMlx0PWoVgs1UnTO7-vqwBIJ1U7n4lSbFjWIW2iQaU5xu51Lwxgso9vnd-S"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50"></div>
+</div>
+<!-- Particle/Glow Overlays -->
+<div class="fixed inset-0 z-10 pointer-events-none">
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-container/10 blur-[120px] animate-pulse"></div>
+<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-tertiary-container/10 blur-[120px] animate-pulse delay-700"></div>
+<!-- Simulated Particles -->
+<div class="absolute top-20 right-[15%] w-1 h-1 bg-cyan-400 shadow-[0_0_8px_#00f0ff]"></div>
+<div class="absolute bottom-40 left-[10%] w-2 h-2 bg-magenta-400 shadow-[0_0_10px_#ff00ff]"></div>
+<div class="absolute top-1/2 left-[5%] w-1 h-1 bg-cyan-300"></div>
+<div class="absolute bottom-1/2 right-[8%] w-1 h-1 bg-magenta-300"></div>
+</div>
+<!-- Shared Header Component -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 bg-transparent">
+<div class="text-2xl font-black italic text-cyan-400 dark:text-cyan-300 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] font-['Space_Grotesk'] uppercase tracking-[0.1em]">
+            ECHO DRIFT
+        </div>
+<div class="flex gap-6">
+<button class="material-symbols-outlined text-cyan-900/60 dark:text-cyan-100/40 hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all p-2">timeline</button>
+<button class="material-symbols-outlined text-cyan-900/60 dark:text-cyan-100/40 hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all p-2">settings</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="relative z-20 h-full flex flex-col items-center justify-center p-6 md:p-12">
+<!-- Victory Headline -->
+<div class="text-center mb-16 space-y-2">
+<p class="font-label text-cyan-400 tracking-[0.4em] text-sm mb-4">OBJECTIVE REACHED</p>
+<h1 class="font-headline text-5xl md:text-8xl font-black italic tracking-tighter text-primary drop-shadow-[0_0_30px_rgba(219,252,255,0.4)]">
+                SYNCHRONIZATION COMPLETE
+            </h1>
+<div class="h-[1px] w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent mt-8"></div>
+</div>
+<!-- Bento Grid Stats Layout -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full">
+<!-- Stat Card: Time -->
+<div class="glass-panel border-l-2 border-primary-container p-8 relative group overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-primary-container/20 font-headline font-black text-6xl">01</div>
+<label class="font-label text-xs text-primary-container tracking-widest block mb-1">CHRONO_DATA</label>
+<h3 class="font-headline text-xl text-on-surface-variant uppercase mb-4">Time Elapsed</h3>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-5xl font-bold text-primary">04:12</span>
+<span class="text-primary/40 font-label text-sm">.88</span>
+</div>
+<div class="mt-4 h-1 bg-surface-container-highest w-full overflow-hidden">
+<div class="h-full bg-primary-container w-3/4"></div>
+</div>
+</div>
+<!-- Stat Card: Echoes -->
+<div class="glass-panel border-l-2 border-tertiary-container p-8 relative group overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-tertiary-container/20 font-headline font-black text-6xl">02</div>
+<label class="font-label text-xs text-tertiary-container tracking-widest block mb-1">PULSE_SYNC</label>
+<h3 class="font-headline text-xl text-on-surface-variant uppercase mb-4">Echoes Triggered</h3>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-5xl font-bold text-tertiary">24</span>
+<span class="text-tertiary/40 font-label text-sm">/ 30</span>
+</div>
+<div class="mt-4 flex gap-1">
+<div class="h-1 bg-tertiary-container flex-1"></div>
+<div class="h-1 bg-tertiary-container flex-1"></div>
+<div class="h-1 bg-tertiary-container flex-1"></div>
+<div class="h-1 bg-tertiary-container/20 flex-1"></div>
+</div>
+</div>
+<!-- Stat Card: Secrets -->
+<div class="glass-panel border-l-2 border-primary-container p-8 relative group overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-primary-container/20 font-headline font-black text-6xl">03</div>
+<label class="font-label text-xs text-primary-container tracking-widest block mb-1">ARCHIVE_RETRIEVAL</label>
+<h3 class="font-headline text-xl text-on-surface-variant uppercase mb-4">Secrets Discovered</h3>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-5xl font-bold text-primary">03</span>
+<span class="text-primary/40 font-label text-sm">CORES</span>
+</div>
+<div class="mt-4 flex gap-2">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">token</span>
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">token</span>
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">token</span>
+</div>
+</div>
+</div>
+<!-- Call to Actions -->
+<div class="mt-16 flex flex-col md:flex-row gap-6 w-full max-w-2xl">
+<!-- REPLAY DATA -->
+<button class="flex-1 px-8 py-5 border border-outline-variant/30 font-headline font-bold tracking-widest text-on-surface-variant hover:bg-surface-variant transition-all flex items-center justify-center gap-3 group">
+<span class="material-symbols-outlined group-hover:animate-spin">refresh</span>
+                REPLAY DATA
+            </button>
+<!-- NEXT MISSION -->
+<button class="flex-[1.5] px-8 py-5 bg-primary-container text-on-primary-container font-headline font-black tracking-[0.2em] hover:scale-105 transition-transform flex items-center justify-center gap-3 relative overflow-hidden group">
+<div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-[-20deg]"></div>
+                NEXT MISSION
+                <span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Side Decoration Readouts -->
+<aside class="fixed right-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-8 opacity-40">
+<div class="text-right">
+<p class="font-label text-[10px] text-cyan-400">LATENCY_STABLE</p>
+<p class="font-headline font-bold text-xs">0.002ms</p>
+</div>
+<div class="text-right">
+<p class="font-label text-[10px] text-magenta-400">ENCRYPTION_LEVEL</p>
+<p class="font-headline font-bold text-xs">OMEGA-7</p>
+</div>
+<div class="text-right">
+<p class="font-label text-[10px] text-cyan-400">DRIFT_DEPTH</p>
+<p class="font-headline font-bold text-xs">4,800m</p>
+</div>
+</aside>
+<!-- Shared Bottom Navigation Suppressed for Focused Task (Victory Screen) -->
+<!-- Navigation is only shown on top-level destinations per policy. This is a task-focused screen. -->
+</body></html>

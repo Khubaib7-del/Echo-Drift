@@ -1,0 +1,41 @@
+# Echo Drift: Design and Functional Specification
+
+## 1. Project Overview
+**Title:** Echo Drift
+**Genre:** 2D Side-Scrolling Puzzle Platformer
+**Core Mechanic:** The "Echo" – A parallel timeline that replicates the player's past actions with a delayed mirror effect.
+
+## 2. Visual & Aesthetic Direction
+- **Dual Timelines:** 
+    - **Present (Active):** High-contrast cyan, crisp edges, energetic.
+    - **Echo (Past):** Ethereal magenta, glitch effects, ghostly trails.
+- **HUD:** Minimalist holographic interface integrated into the game world.
+
+## 3. Screen Map & User Flows
+### Screen 1: Main Menu (The Hub)
+- **Purpose:** Entry point for the player.
+- **Elements:** Large animated logo with glitch effects, buttons for Play, Settings, and Credits.
+- **Interaction:** Smooth transitions and parallax background effects.
+
+### Screen 2: Level Selection (The Nexus)
+- **Purpose:** Navigate between game levels.
+- **Elements:** Grid of level cards showing difficulty, completion status, and "Echo Energy" collected.
+- **Interaction:** Hover effects that preview the level's timeline distortion level.
+
+### Screen 3: Gameplay Interface (The Rift)
+- **Purpose:** The core gaming experience.
+- **Elements:** 
+    - **Main Viewport:** 2D WebGL canvas with layers for background, gameplay, and echo timeline.
+    - **HUD:** Timeline health, echo duration meter, and current level objective.
+- **Interaction:** Real-time movement, jumping, and triggering the echo mechanic.
+
+### Screen 4: Victory / Level Complete (The Resolution)
+- **Purpose:** Reward the player and provide stats.
+- **Elements:** Level stats (time taken, echoes used, secrets found), "Next Level" and "Replay" buttons.
+- **Interaction:** Energetic animations celebrating the win.
+
+## 4. Technical Architecture (Proposed)
+- **Engine:** PixiJS (WebGL Rendering)
+- **State Management:** React (for UI) + Custom Game Loop
+- **Physics:** Matter.js (lightweight 2D)
+- **Audio:** Howler.js for spatial and multi-layered soundscapes.
