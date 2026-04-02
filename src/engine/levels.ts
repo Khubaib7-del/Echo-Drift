@@ -6,7 +6,11 @@ export interface Rect {
 }
 
 export interface ButtonData extends Rect {
-  targetDoorIndex: number; // The index of the door in `doors` it unlocks
+  targetDoorIndex: number;
+}
+
+export interface EnemyData extends Rect {
+  vx: number;
 }
 
 export interface LevelData {
@@ -16,65 +20,130 @@ export interface LevelData {
   buttons: ButtonData[];
   doors: Rect[];
   hazards: Rect[]; 
+  enemies: EnemyData[];
 }
 
-export const LEVELS: LevelData[] = [
-  // Sector Alpha (Level 1) - Basic movement and jumping
-  {
+const generateLevels = (): LevelData[] => {
+  const levels: LevelData[] = [];
+  
+  // Level 1: Sector Alpha Intro
+  levels.push({
     spawn: { x: 100, y: 300 },
-    goal: { x: 900, y: 300, w: 80, h: 80 },
+    goal: { x: 800, y: 300, w: 80, h: 80 },
     platforms: [
       { x: 50, y: 400, w: 300, h: 50 },
-      { x: 500, y: 400, w: 100, h: 50 }, // A small gap to jump
+      { x: 500, y: 400, w: 100, h: 50 }, 
       { x: 750, y: 400, w: 300, h: 50 },
     ],
     buttons: [],
     doors: [],
-    hazards: [
-      { x: 0, y: 600, w: 2000, h: 100 } // Kill floor
-    ]
-  },
-  
-  // Echo Bridge (Level 2) - Introduce button and door
-  {
+    hazards: [{ x: 0, y: 600, w: 2000, h: 100 }],
+    enemies: []
+  });
+
+  // Level 2: Echo Bridge
+  levels.push({
     spawn: { x: 100, y: 300 },
     goal: { x: 900, y: 300, w: 80, h: 80 },
     platforms: [
       { x: 50, y: 400, w: 1000, h: 50 },
-      // Elevated platform for the button
       { x: 400, y: 250, w: 150, h: 20 },
     ],
-    buttons: [
-      { x: 450, y: 230, w: 50, h: 20, targetDoorIndex: 0 }
-    ],
-    doors: [
-      // Blocking the goal
-      { x: 800, y: 200, w: 20, h: 200 }
-    ],
-    hazards: [
-      { x: 0, y: 600, w: 2000, h: 100 }
-    ]
-  },
+    buttons: [{ x: 450, y: 230, w: 50, h: 20, targetDoorIndex: 0 }],
+    doors: [{ x: 800, y: 200, w: 20, h: 200 }],
+    hazards: [{ x: 0, y: 600, w: 2000, h: 100 }],
+    enemies: []
+  });
 
-  // The Fracture (Level 3) - Timing Puzzle
-  {
+  // Level 3: The Fracture
+  levels.push({
     spawn: { x: 100, y: 300 },
     goal: { x: 900, y: 150, w: 80, h: 80 },
     platforms: [
       { x: 50, y: 400, w: 250, h: 50 },
       { x: 850, y: 250, w: 200, h: 50 },
     ],
-    buttons: [
-      { x: 200, y: 380, w: 50, h: 20, targetDoorIndex: 0 }
-    ],
-    doors: [
-      // In this level, the "door" actually acts as a bridge we enable! 
-      // It is initially lowered and blocking us from falling? No, wait. 
-      // The puzzle design should be: A wall is blocking a long jump.
-      { x: 500, y: 100, w: 20, h: 400 }
-    ],
-    hazards: [
-      { x: 0, y: 600, w: 2000, h: 100 }
-    ]
+    buttons: [{ x: 200, y: 380, w: 50, h: 20, targetDoorIndex: 0 }],
+    doors: [{ x: 500, y: 100, w: 20, h: 400 }],
+    hazards: [{ x: 0, y: 600, w: 2000, h: 100 }],
+    enemies: []
+  });
+
+  // Procedural Generation for Levels 4-20
+  for (let i = 4; i <= 20; i++) {
+    const difficulty = i / 20; // 0.2 to 1.0
+    
+    const platforms: Rect[] = [];
+    const buttons: ButtonData[] = [];
+    const doors: Rect[] = [];
+    const enemies: EnemyData[] = [];
+    
+    let currentX = 50;
+    
+    // Spawn Platform
+    platforms.push({ x: currentX, y: 400, w: 200, h: 50 });
+    currentX += 200;
+
+    // Generate Chunks
+    const numChunks = Math.floor(2 + (difficulty * 4));
+    
+    for (let c = 0; c < numChunks; c++) {
+      const gap = 50 + (Math.random() * 150 * difficulty);
+      currentX += gap;
+      
+      const pWidth = 100 + (Math.random() * 200);
+      const pY = 250 + (Math.random() * 200);
+      
+      platforms.push({ x: currentX, y: pY, w: pWidth, h: 50 });
+      
+      // Randomly spawn a door & button puzzle (50% chance if difficulty > 0.3)
+      if (difficulty > 0.3 && Math.random() > 0.5) {
+         // Button on this platform
+         buttons.push({ 
+             x: currentX + (pWidth / 2) - 25, 
+             y: pY - 20, 
+             w: 50, h: 20, 
+             targetDoorIndex: doors.length 
+         });
+         
+         // Door on the edge of this platform blocking progression
+         doors.push({
+             x: currentX + pWidth - 20,
+             y: pY - 150,
+             w: 20, h: 150
+         });
+      }
+
+      // Sector Beta: Enemies (Levels 11-20)
+      if (i > 10 && difficulty > 0.4 && Math.random() > 0.4) {
+         // Add a patrolling enemy on this platform
+         enemies.push({
+             x: currentX + (pWidth / 2),
+             y: pY - 40,
+             w: 30, h: 40,
+             vx: 2 + (Math.random() * 3) // Enemy speed
+         });
+      }
+      
+      currentX += pWidth;
+    }
+
+    // Goal Platform
+    currentX += 100;
+    platforms.push({ x: currentX, y: 400, w: 200, h: 50 });
+    
+    levels.push({
+      spawn: { x: 100, y: 300 },
+      goal: { x: currentX + 50, y: 320, w: 80, h: 80 },
+      platforms: platforms,
+      buttons: buttons,
+      doors: doors,
+      hazards: [{ x: 0, y: 800, w: 5000, h: 200 }], // Infinite kill floor
+      enemies: enemies
+    });
   }
-];
+
+  return levels;
+};
+
+export const LEVELS: LevelData[] = generateLevels();

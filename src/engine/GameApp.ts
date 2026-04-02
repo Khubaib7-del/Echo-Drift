@@ -17,8 +17,9 @@ export class GameApp {
   private readonly gravity = 0.5;
   private readonly jumpStrength = -12;
   private readonly speed = 5;
+  private currentLevelIndex: number = 1;
+  private onWinCallback?: (levelPassed: number) => void;
   private isGrounded = false;
-  private onWinCallback?: () => void;
 
   // Level specific mechanics
   private levelData!: LevelData;
@@ -27,12 +28,13 @@ export class GameApp {
   private buttons: { graphics: PIXI.Graphics, rect: Rect, targetDoorIndex: number, isPressed: boolean }[] = [];
   private goalGraphics!: PIXI.Graphics;
   private hazards: PIXI.Graphics[] = [];
+  private enemies: { graphics: PIXI.Graphics, data: import('./levels').EnemyData, originX: number }[] = [];
 
   constructor() {
     this.app = new PIXI.Application();
   }
 
-  public async init(canvas: HTMLCanvasElement, onWin?: () => void) {
+  public async init(canvas: HTMLCanvasElement, onWin?: (levelPassed: number) => void) {
     this.onWinCallback = onWin;
 
     await this.app.init({
@@ -52,6 +54,7 @@ export class GameApp {
   }
 
   public loadLevel(levelIndex: number) {
+    this.currentLevelIndex = levelIndex;
     this.levelData = LEVELS[levelIndex - 1] || LEVELS[0];
     
     // Clear previous
@@ -59,6 +62,7 @@ export class GameApp {
     this.doors.forEach(d => d.graphics.destroy());
     this.buttons.forEach(b => b.graphics.destroy());
     this.hazards.forEach(h => h.destroy());
+    this.enemies.forEach(e => e.graphics.destroy());
     if (this.goalGraphics) this.goalGraphics.destroy();
     if (this.player) this.player.destroy();
     if (this.echo) this.echo.destroy();
@@ -67,6 +71,7 @@ export class GameApp {
     this.doors = [];
     this.buttons = [];
     this.hazards = [];
+    this.enemies = [];
 
     this.setupLevel();
     this.setupEntities();
@@ -126,6 +131,18 @@ export class GameApp {
     this.goalGraphics.fill({ color: 0x00f0ff, alpha: 0.2 });
     this.goalGraphics.stroke({ width: 2, color: 0x00f0ff });
     this.app.stage.addChild(this.goalGraphics);
+
+    // Enemies
+    this.levelData.enemies.forEach(e => {
+       const g = new PIXI.Graphics();
+       g.rect(0, 0, e.w, e.h); 
+       g.x = e.x;
+       g.y = e.y;
+       g.fill({ color: 0xff00ff, alpha: 0.9 });
+       g.stroke({ color: 0xffffff, width: 1 });
+       this.enemies.push({ graphics: g, data: { ...e }, originX: e.x });
+       this.app.stage.addChild(g);
+    });
   }
 
   private setupEntities() {
@@ -167,7 +184,7 @@ export class GameApp {
 
   private update(dt: number) {
     if (this.keys['m']) {
-        if (this.onWinCallback) this.onWinCallback();
+        if (this.onWinCallback) this.onWinCallback(this.currentLevelIndex);
         this.keys['m'] = false;
     }
 
@@ -196,6 +213,7 @@ export class GameApp {
 
     // Game Logic Checks
     this.updateEchoLogic();
+    this.updateEnemies(dt);
     this.checkInteractions();
   }
 
@@ -249,6 +267,28 @@ export class GameApp {
     }
   }
 
+  private updateEnemies(dt: number) {
+     const pRect = {x: this.player.x, y: this.player.y, w: 40, h: 80};
+     const patrolDistance = 100;
+
+     for(const enemy of this.enemies) {
+         enemy.data.x += enemy.data.vx * dt;
+         
+         // Reverse if out of bounds
+         if (enemy.data.x > enemy.originX + patrolDistance || enemy.data.x < enemy.originX - patrolDistance) {
+             enemy.data.vx *= -1;
+         }
+
+         enemy.graphics.x = enemy.data.x;
+
+         // Hit detection
+         if (this.checkOverlap(pRect, enemy.data)) {
+             this.resetPlayer();
+             return;
+         }
+     }
+  }
+
   private checkInteractions() {
      const pRect = {x: this.player.x, y: this.player.y, w: 40, h: 80};
      const eRect = {x: this.echo.x, y: this.echo.y, w: 40, h: 80};
@@ -275,10 +315,9 @@ export class GameApp {
         }
      }
 
-     // Goal
      if (this.checkOverlap(pRect, this.levelData.goal)) {
         if (this.onWinCallback) {
-            this.onWinCallback();
+            this.onWinCallback(this.currentLevelIndex);
         }
      }
   }

@@ -11,13 +11,24 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<GameApp | null>(null);
   const [gameState, setGameState] = useState<GameState>('MENU');
+  
+  const [highestUnlockedLevel, setHighestUnlockedLevel] = useState<number>(() => {
+    return parseInt(localStorage.getItem('echo_drift_highest_level') || '1');
+  });
 
   useEffect(() => {
     if (!canvasRef.current || gameRef.current) return;
 
     // Initialize PixiJS
     const game = new GameApp();
-    game.init(canvasRef.current, () => {
+    game.init(canvasRef.current, (levelPassed: number) => {
+      // Trigger win logic
+      const nextLevel = levelPassed + 1;
+      setHighestUnlockedLevel(prev => {
+          const highest = Math.max(prev, nextLevel);
+          localStorage.setItem('echo_drift_highest_level', highest.toString());
+          return highest;
+      });
       setGameState('SUCCESS');
     });
     gameRef.current = game;
@@ -49,7 +60,11 @@ function App() {
 
       {/* UI Layers */}
       {gameState === 'MENU' && <MainMenu onStart={enterLevelSelect} />}
-      {gameState === 'LEVEL_SELECT' && <LevelSelection onSelectLevel={startGame} onBack={returnToMenu} />}
+      {gameState === 'LEVEL_SELECT' && <LevelSelection 
+         highestUnlockedLevel={highestUnlockedLevel}
+         onSelectLevel={startGame} 
+         onBack={returnToMenu} 
+      />}
       {gameState === 'PLAYING' && <HUD />}
       {gameState === 'SUCCESS' && <MissionSuccess onNext={enterLevelSelect} onMenu={returnToMenu} />}
     </div>

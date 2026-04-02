@@ -31,3 +31,53 @@
     background-position: center;
   }
 }
+
+/* Jitter Animation for Mission Success */
+.glitch-jitter {
+    animation: jitter 0.2s infinite;
+}
+@keyframes jitter {
+    0% { transform: translate(0); }
+    25% { transform: translate(-2px, 2px); }
+    50% { transform: translate(2px, -2px); }
+    75% { transform: translate(-1px, -1px); }
+    100% { transform: translate(0); }
+}
+.clip-slant {
+    clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+}
+.clip-slant-rev {
+    clip-path: polygon(5% 0, 100% 0, 100% 100%, 0% 100%);
+}
+
+/* Custom Animated Scrollbar */
+.animated-scrollbar {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #00f0ff transparent;
+}
+
+.animated-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.animated-scrollbar::-webkit-scrollbar-track {
+  background: rgba(20, 20, 25, 0.8);
+  border-left: 1px solid rgba(0, 240, 255, 0.1);
+}
+.animated-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00f0ff 0%, #ff00ff 100%);
+  border-radius: 4px;
+}
+.animated-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #ff00ff;
+  box-shadow: 0 0 15px #ff00ff;
+}
+
+/* Clean Sidebar (No Scrollbar Visible) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

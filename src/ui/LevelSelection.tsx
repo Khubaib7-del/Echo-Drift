@@ -1,16 +1,29 @@
 import React from 'react';
 
 interface LevelSelectionProps {
+  highestUnlockedLevel: number;
   onSelectLevel: (levelIndex: number) => void;
   onBack: () => void;
 }
 
-const LevelSelection: React.FC<LevelSelectionProps> = ({ onSelectLevel, onBack }) => {
-  const levels = [
-    { id: 1, name: 'SECTOR ALPHA', status: 'UNLOCKED', sync: '0%', color: 'border-cyan-400' },
-    { id: 2, name: 'ECHO BRIDGE', status: 'UNLOCKED', sync: '0%', color: 'border-cyan-400' },
-    { id: 3, name: 'THE FRACTURE', status: 'UNLOCKED', sync: '0%', color: 'border-cyan-400' },
-  ];
+const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, onSelectLevel, onBack }) => {
+  const levels = Array.from({ length: 20 }).map((_, i) => {
+     const id = i + 1;
+     let name = id <= 10 ? `SECTOR ALPHA - SECTION ${id}` : `SECTOR BETA - SECTION ${id - 10}`;
+     if (id === 1) name = 'SECTOR ALPHA ORIGIN';
+     if (id === 2) name = 'ECHO BRIDGE';
+     if (id === 3) name = 'THE FRACTURE';
+     if (id === 11) name = 'SECTOR BETA ORIGIN';
+
+     const isUnlocked = id <= highestUnlockedLevel;
+     return {
+        id,
+        name,
+        status: isUnlocked ? 'UNLOCKED' : 'LOCKED',
+        sync: isUnlocked ? '0%' : '---',
+        color: isUnlocked ? 'border-cyan-400' : 'border-zinc-800'
+     };
+  });
 
   return (
     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-auto bg-background/90 backdrop-blur-md">
@@ -25,7 +38,7 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ onSelectLevel, onBack }
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-5xl mb-12 flex justify-between items-end relative z-10 px-8">
+      <div className="w-full max-w-5xl/90 mt-20 mb-8 flex justify-between items-end relative z-10 px-8 shrink-0">
         <div>
           <h2 className="text-6xl font-black font-headline tracking-tighter uppercase text-white leading-none">
             TEMPORAL <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-600">NODES</span>
@@ -44,38 +57,44 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ onSelectLevel, onBack }
         </button>
       </div>
 
-      {/* Level Cards */}
-      <div className="grid grid-cols-3 gap-8 w-full max-w-5xl relative z-10 px-8">
-        {levels.map((lvl) => (
-          <button
-            key={lvl.id}
-            onClick={() => lvl.status === 'UNLOCKED' && onSelectLevel(lvl.id)}
-            className={`
-              relative flex flex-col items-start p-8 transition-all duration-300
-              ${lvl.status === 'UNLOCKED' ? 'hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,240,255,0.15)] cursor-pointer' : 'opacity-40 cursor-not-allowed grayscale'}
-              bg-surface-container-high border-t border-l ${lvl.color}
-              before:absolute before:right-0 before:top-0 before:w-6 before:h-6 before:bg-background before:clip-path-custom
-            `}
-          >
-            <div className="w-12 h-12 mb-6 bg-surface-container-lowest border border-white/5 flex items-center justify-center">
-              <span className="font-headline text-xl text-white/40 font-black">0{lvl.id}</span>
-            </div>
-            
-            <h3 className="text-2xl font-black font-headline uppercase mb-2 text-white">{lvl.name}</h3>
-            
-            <div className="w-full h-[1px] bg-white/5 my-4"></div>
-            
-            <div className="w-full flex justify-between items-center text-xs font-headline tracking-widest uppercase">
-              <span className={lvl.status === 'UNLOCKED' ? 'text-cyan-400' : 'text-zinc-500'}>{lvl.status}</span>
-              <span className="text-zinc-600">SYNC: {lvl.sync}</span>
-            </div>
-            
-            {/* Status light */}
-            {lvl.status === 'UNLOCKED' && (
-              <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-cyan-400 animate-pulse-slow shadow-[0_0_8px_#00F0FF]"></div>
-            )}
-          </button>
-        ))}
+      {/* Level Cards - Scrollable */}
+      <div className="w-full max-w-5xl flex-1 relative z-10 px-8 pb-32 overflow-y-auto no-scrollbar">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {levels.map((lvl) => (
+            <button
+                key={lvl.id}
+                onClick={() => lvl.status === 'UNLOCKED' && onSelectLevel(lvl.id)}
+                className={`
+                relative flex flex-col items-start p-8 transition-all duration-300
+                ${lvl.status === 'UNLOCKED' ? 'hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,240,255,0.15)] cursor-pointer' : 'opacity-40 cursor-not-allowed grayscale border-zinc-800'}
+                bg-surface-container-high border-t border-l ${lvl.color}
+                before:absolute before:right-0 before:top-0 before:w-6 before:h-6 before:bg-background before:clip-path-custom
+                `}
+            >
+                <div className="w-12 h-12 mb-6 bg-surface-container-lowest border border-white/5 flex items-center justify-center">
+                {lvl.status === 'UNLOCKED' ? (
+                    <span className="font-headline text-xl text-white/40 font-black">{lvl.id.toString().padStart(2, '0')}</span>
+                ) : (
+                    <span className="material-symbols-outlined text-red-500/50">lock</span>
+                )}
+                </div>
+                
+                <h3 className="text-xl font-black font-headline uppercase mb-2 text-white text-left">{lvl.name}</h3>
+                
+                <div className="w-full h-[1px] bg-white/5 my-4"></div>
+                
+                <div className="w-full flex justify-between items-center text-xs font-headline tracking-widest uppercase">
+                <span className={lvl.status === 'UNLOCKED' ? 'text-cyan-400' : 'text-red-500/50'}>{lvl.status}</span>
+                <span className="text-zinc-600">SYNC: {lvl.sync}</span>
+                </div>
+                
+                {/* Status light */}
+                {lvl.status === 'UNLOCKED' && (
+                <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-cyan-400 animate-pulse-slow shadow-[0_0_8px_#00F0FF]"></div>
+                )}
+            </button>
+            ))}
+        </div>
       </div>
     </div>
   );
