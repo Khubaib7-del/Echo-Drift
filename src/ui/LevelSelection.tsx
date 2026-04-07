@@ -4,9 +4,10 @@ interface LevelSelectionProps {
   highestUnlockedLevel: number;
   onSelectLevel: (levelIndex: number) => void;
   onBack: () => void;
+  onToggleSettings: () => void;
 }
 
-const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, onSelectLevel, onBack }) => {
+const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, onSelectLevel, onBack, onToggleSettings }) => {
   const levels = Array.from({ length: 20 }).map((_, i) => {
      const id = i + 1;
      let name = id <= 10 ? `SECTOR ALPHA - SECTION ${id}` : `SECTOR BETA - SECTION ${id - 10}`;
@@ -26,10 +27,29 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
   });
 
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-auto bg-background/90 backdrop-blur-md">
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-auto bg-background/90 backdrop-blur-md overflow-hidden font-body">
       
+      {/* Shared Header Component */}
+      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 bg-transparent text-white pointer-events-none">
+        <div className="text-2xl font-black italic text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] font-headline uppercase tracking-[0.1em] pointer-events-auto">
+          ECHO DRIFT
+        </div>
+        <div className="flex gap-6 pointer-events-auto">
+          <button className="hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all p-2 group">
+            <span className="material-symbols-outlined text-cyan-400">timeline</span>
+          </button>
+          <button 
+            onClick={onToggleSettings}
+            className="hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all p-2 group"
+          >
+            <span className="material-symbols-outlined text-cyan-400">settings</span>
+          </button>
+        </div>
+      </header>
+
+
       {/* Decorative Grid Lines */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
+      <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
         <div className="w-full h-full border-[0.5px] border-cyan-400/20 grid grid-cols-6 grid-rows-6">
           {[...Array(36)].map((_, i) => (
             <div key={i} className="border-[0.5px] border-cyan-400/10"></div>
@@ -37,8 +57,17 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
         </div>
       </div>
 
+      {/* Background Silhouette - THE ROBOT IMAGE */}
+      <div className="absolute inset-0 pointer-events-none opacity-10 flex items-center justify-end">
+          <img 
+              className="h-full object-contain filter grayscale invert brightness-200 contrast-150 scale-125 translate-x-1/4" 
+              alt="Robot Background" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7ofsQP27LBp5Bh9wm9fMnu648Nv40oAjv-gS-Jl5qMrrv896DUj8nThk31r9l1ImmSfAU-L8ncNF3ResCWUOlRV8lk6-72EgZPK38_ZmZDCpQtXKJmp4-vIWbijrB5VDre9btO9VwpDo79TtNQKHrQUd__yFphRB3yEhFaDxAd_zwUJotjHTZCE7yeaVWP-KStO4N9sEKwwyTJKwyH3yzGEvVJgYumEt898-KOahUtZSrlJFJqr4439bf_h1B2IlVMANen_Uz9fS7"
+          />
+      </div>
+
       {/* Header */}
-      <div className="w-full max-w-5xl/90 mt-20 mb-8 flex justify-between items-end relative z-10 px-8 shrink-0">
+      <div className="w-full max-w-5xl mt-20 mb-8 flex justify-between items-end relative z-10 px-8 shrink-0">
         <div>
           <h2 className="text-6xl font-black font-headline tracking-tighter uppercase text-white leading-none">
             TEMPORAL <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-600">NODES</span>
@@ -58,28 +87,28 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
       </div>
 
       {/* Level Cards - Scrollable */}
-      <div className="w-full max-w-5xl flex-1 relative z-10 px-8 pb-32 overflow-y-auto no-scrollbar">
+      <div className="w-full max-w-5xl flex-1 relative z-10 px-8 pb-32 overflow-y-auto animated-scrollbar">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {levels.map((lvl) => (
             <button
                 key={lvl.id}
                 onClick={() => lvl.status === 'UNLOCKED' && onSelectLevel(lvl.id)}
                 className={`
-                relative flex flex-col items-start p-8 transition-all duration-300
-                ${lvl.status === 'UNLOCKED' ? 'hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,240,255,0.15)] cursor-pointer' : 'opacity-40 cursor-not-allowed grayscale border-zinc-800'}
+                relative flex flex-col items-start p-8 transition-all duration-300 group/card
+                ${lvl.status === 'UNLOCKED' ? 'hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,240,255,0.15)] cursor-pointer hover:border-cyan-400' : 'opacity-40 cursor-not-allowed grayscale border-zinc-800'}
                 bg-surface-container-high border-t border-l ${lvl.color}
                 before:absolute before:right-0 before:top-0 before:w-6 before:h-6 before:bg-background before:clip-path-custom
                 `}
             >
-                <div className="w-12 h-12 mb-6 bg-surface-container-lowest border border-white/5 flex items-center justify-center">
+                <div className="w-12 h-12 mb-6 bg-surface-container-lowest border border-white/5 flex items-center justify-center group-hover/card:bg-cyan-400 group-hover/card:text-zinc-950 transition-colors">
                 {lvl.status === 'UNLOCKED' ? (
-                    <span className="font-headline text-xl text-white/40 font-black">{lvl.id.toString().padStart(2, '0')}</span>
+                    <span className="font-headline text-xl text-white group-hover/card:text-zinc-950 font-black">{lvl.id.toString().padStart(2, '0')}</span>
                 ) : (
                     <span className="material-symbols-outlined text-red-500/50">lock</span>
                 )}
                 </div>
                 
-                <h3 className="text-xl font-black font-headline uppercase mb-2 text-white text-left">{lvl.name}</h3>
+                <h3 className="text-xl font-black font-headline uppercase mb-2 text-white text-left group-hover/card:text-cyan-400 transition-colors">{lvl.name}</h3>
                 
                 <div className="w-full h-[1px] bg-white/5 my-4"></div>
                 

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ECHO DRIFT - MISSION SELECT</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-low": "#1b1b20",
+              "secondary-container": "#45456d",
+              "on-primary": "#00363a",
+              "on-secondary-fixed": "#17173d",
+              "surface-container-high": "#2a292f",
+              "tertiary-fixed": "#ffd7f5",
+              "on-secondary-fixed-variant": "#43436b",
+              "inverse-surface": "#e4e1e9",
+              "on-error": "#690005",
+              "on-secondary-container": "#b5b4e3",
+              "primary-fixed": "#7df4ff",
+              "secondary-fixed": "#e2dfff",
+              "error-container": "#93000a",
+              "surface-bright": "#39383e",
+              "primary": "#dbfcff",
+              "on-background": "#e4e1e9",
+              "surface": "#131318",
+              "secondary-fixed-dim": "#c3c2f2",
+              "on-primary-fixed-variant": "#004f54",
+              "error": "#ffb4ab",
+              "on-primary-fixed": "#002022",
+              "surface-container-lowest": "#0e0e13",
+              "surface-variant": "#35343a",
+              "tertiary": "#fff3f9",
+              "on-tertiary-fixed-variant": "#810081",
+              "primary-fixed-dim": "#00dbe9",
+              "outline-variant": "#3b494b",
+              "primary-container": "#00f0ff",
+              "on-surface-variant": "#b9cacb",
+              "on-primary-container": "#006970",
+              "tertiary-fixed-dim": "#ffabf3",
+              "outline": "#849495",
+              "background": "#131318",
+              "on-secondary": "#2c2c53",
+              "surface-tint": "#00dbe9",
+              "inverse-primary": "#006970",
+              "on-surface": "#e4e1e9",
+              "surface-container-highest": "#35343a",
+              "surface-container": "#1f1f25",
+              "secondary": "#c3c2f2",
+              "inverse-on-surface": "#303036",
+              "tertiary-container": "#ffc9f4",
+              "on-error-container": "#ffdad6",
+              "on-tertiary-fixed": "#380038",
+              "surface-dim": "#131318",
+              "on-tertiary": "#5b005b",
+              "on-tertiary-container": "#a900a9"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Manrope"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .clip-path-mission {
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
+        }
+        .glitch-jitter:active {
+            transform: translate(2px, -1px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 bg-transparent via-surface-container-low font-headline uppercase tracking-[0.1em] font-bold">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-black italic text-cyan-400 dark:text-cyan-300 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">ECHO DRIFT</span>
+</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-cyan-300 border-b-2 border-cyan-400 pb-1 hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all" href="#">MISSION</a>
+<a class="text-cyan-900/60 dark:text-cyan-100/40 hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all" href="#">TIMELINE</a>
+<a class="text-cyan-900/60 dark:text-cyan-100/40 hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all" href="#">CHART</a>
+<a class="text-cyan-900/60 dark:text-cyan-100/40 hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all" href="#">MEMORIES</a>
+</nav>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-cyan-400 cursor-pointer hover:animate-pulse">settings</span>
+<span class="material-symbols-outlined text-cyan-400 cursor-pointer hover:animate-pulse">timeline</span>
+</div>
+</header>
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col z-40 bg-zinc-950/40 backdrop-blur-xl h-screen w-64 border-r-0 shadow-[10px_0_30px_-15px_rgba(0,240,255,0.2)] pt-24 hidden lg:flex">
+<div class="px-6 mb-12">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 bg-surface-container-high flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">person_filled</span>
+</div>
+<div>
+<p class="font-headline text-xs font-bold text-cyan-400">SECTOR 7-G</p>
+<p class="font-label text-[10px] text-cyan-400/50">PRESENT_TIMELINE_STABLE</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="px-8 py-4 flex items-center gap-4 bg-cyan-400 text-zinc-950 font-black clip-path-mission hover:translate-x-2 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">rocket_launch</span>
+<span class="font-headline tracking-tighter uppercase">MISSION</span>
+</a>
+<a class="px-8 py-4 flex items-center gap-4 text-cyan-400/50 hover:text-cyan-300 hover:translate-x-2 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">history_toggle_off</span>
+<span class="font-headline tracking-tighter uppercase">TIMELINE</span>
+</a>
+<a class="px-8 py-4 flex items-center gap-4 text-cyan-400/50 hover:text-cyan-300 hover:translate-x-2 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-headline tracking-tighter uppercase">CHART</span>
+</a>
+<a class="px-8 py-4 flex items-center gap-4 text-cyan-400/50 hover:text-cyan-300 hover:translate-x-2 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">auto_awesome_motion</span>
+<span class="font-headline tracking-tighter uppercase">MEMORIES</span>
+</a>
+</nav>
+<div class="mt-auto p-6">
+<button class="w-full py-4 bg-surface-container-low border border-cyan-400 text-cyan-400 font-headline font-bold hover:bg-primary-container hover:text-on-primary-container transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">bolt</span>
+                INITIATE DRIFT
+            </button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="lg:pl-64 pt-24 min-h-screen relative overflow-hidden">
+<!-- Holographic Background Layer -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+<div class="absolute w-full h-full bg-gradient-to-tr from-surface via-surface-container-low to-surface"></div>
+<div class="absolute top-1/4 right-0 w-[800px] h-[800px] bg-primary-container/5 blur-[120px]"></div>
+<div class="absolute bottom-1/4 left-0 w-[600px] h-[600px] bg-tertiary-container/5 blur-[120px]"></div>
+</div>
+<section class="relative z-10 px-8 py-12 max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+<div class="space-y-2">
+<div class="flex items-center gap-2">
+<span class="h-0.5 w-12 bg-primary-fixed-dim"></span>
+<span class="font-label text-primary uppercase tracking-[0.3em] text-xs">Awaiting Deployment</span>
+</div>
+<h1 class="font-headline text-6xl font-black tracking-tight uppercase leading-none italic">
+                        MISSION <span class="text-cyan-400 drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">SELECT</span>
+</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-3 bg-surface-container-low border border-outline-variant/30 text-on-surface-variant font-headline text-sm uppercase tracking-widest hover:border-primary/50 hover:text-primary transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+                        BACK TO HUB
+                    </button>
+<div class="h-12 w-[1px] bg-outline-variant/20 mx-2"></div>
+<div class="text-right">
+<p class="font-label text-[10px] text-cyan-400/60 uppercase">System Status</p>
+<p class="font-headline text-lg font-bold text-cyan-400">ENCRYPTED_LINK_ACTIVE</p>
+</div>
+</div>
+</div>
+<!-- Mission Grid (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+<!-- Level Card 1: Sector 7-G -->
+<div class="group relative flex flex-col bg-surface-container-low border border-outline-variant/20 hover:border-primary/50 transition-all duration-500 overflow-hidden cursor-pointer">
+<div class="relative h-48 overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700" data-alt="Futuristic glowing industrial cityscape with cybernetic towers and digital network overlays in deep blue and cyan" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyrnF4zIk7MDHdzyv_b8H6mE5G4YqLQC_AOJQ_O8UG0lHn724VHpd82plVc8YLtbbgrhoztbb3HC6erg2yHraKwX7ZmTpZkhkvQzWZFyWjpPrIG-TacE-9I4V8f2dPsYLlwBKvcN0weURLZlG-ZBDgIFNVb9pFvIcGXVgVuuZB31g9DF4WmcA2iSn_L7azgyP5FFnAlp6DwIb_e7vBpYCWeyF_wI8Eza6DQ9PgwN_jM_zk4DetrBZf-iPSt9hxhvmo9Q3fkqpvSmYt"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-4 right-4 bg-primary text-on-primary px-3 py-1 font-headline font-black text-[10px] skew-x-[-12deg]">
+                            COMPLETED
+                        </div>
+</div>
+<div class="p-8 space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline text-2xl font-bold uppercase tracking-tighter text-primary">Sector 7-G</h3>
+<p class="font-body text-xs text-on-surface-variant mt-1">Deep space research facility under temporal siege.</p>
+</div>
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl">token</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-cyan-400/60">Difficulty Rating</span>
+<div class="flex gap-1">
+<div class="h-1.5 w-6 bg-cyan-400 shadow-[0_0_5px_#00F0FF]"></div>
+<div class="h-1.5 w-6 bg-cyan-400 shadow-[0_0_5px_#00F0FF]"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-cyan-400/60">Time Distortion</span>
+<span class="font-headline text-sm font-bold text-primary">12.4% <span class="text-[10px] opacity-50">STABLE</span></span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10 group-hover:border-primary/30 transition-colors">
+<div class="flex items-center justify-between text-xs font-label">
+<span class="uppercase">Reward: 2500 Cr</span>
+<span class="text-primary group-hover:translate-x-2 transition-transform">LAUNCH_SESSION →</span>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 right-0 w-8 h-8 bg-primary/10 clip-path-mission opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<!-- Level Card 2: Neon District (Active/High Difficulty) -->
+<div class="group relative flex flex-col bg-surface-container-low border border-outline-variant/20 hover:border-tertiary/50 transition-all duration-500 overflow-hidden cursor-pointer">
+<div class="relative h-48 overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700" data-alt="Cyberpunk city street at night with glowing magenta and violet neon signs reflected in wet asphalt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp-qOZPWEUazWExLFmlvWCRbVRp4ytXcPOXrlS2_hrZbA7MR3CoAIKE1jXS1Aj1RNU-bX-0TGOxk_tkzWF-jlO7QcLKLKIYKArXx9WgI7xLggl_GCMOYjZNs_OVZ4Y2Dczou6xpgrYFlbiOzyn4K5XRy6LbVUoIYaZxY853DDnK9yk92gdFzP4zKrXX_wgX3jLNBfWYFl8hAZyMe2hLn9qp52jqbcVsxeFlrOM9wESjGc_kACKKVDYE0SPDpDWLGqQoZCayBSlphiq"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-4 right-4 bg-tertiary-container text-on-tertiary-container px-3 py-1 font-headline font-black text-[10px] skew-x-[-12deg] animate-pulse">
+                            IN_PROGRESS
+                        </div>
+</div>
+<div class="p-8 space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline text-2xl font-bold uppercase tracking-tighter text-tertiary-fixed-dim">Neon District</h3>
+<p class="font-body text-xs text-on-surface-variant mt-1">High-density urban grid with cascading data-streams.</p>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-3xl">sensors</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-tertiary/60">Difficulty Rating</span>
+<div class="flex gap-1">
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-tertiary/60">Time Distortion</span>
+<span class="font-headline text-sm font-bold text-tertiary">48.9% <span class="text-[10px] opacity-50">CRITICAL</span></span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10 group-hover:border-tertiary/30 transition-colors">
+<div class="flex items-center justify-between text-xs font-label">
+<span class="uppercase text-tertiary">Reward: 8500 Cr</span>
+<span class="text-tertiary group-hover:translate-x-2 transition-transform">RESUME_DRIFT →</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Level Card 3: The Void (Locked) -->
+<div class="group relative flex flex-col bg-surface-container-lowest border border-outline-variant/10 transition-all duration-500 overflow-hidden cursor-not-allowed">
+<div class="absolute inset-0 bg-zinc-950/80 z-20 flex flex-col items-center justify-center space-y-4">
+<span class="material-symbols-outlined text-5xl text-outline-variant" style="font-variation-settings: 'FILL' 0;">lock</span>
+<p class="font-headline text-sm uppercase tracking-widest text-outline-variant">Locked by Syndicate</p>
+</div>
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover grayscale opacity-20" data-alt="Abstract deep space nebula with swirling dark matter and distant white stars in high contrast" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_i1iGKQuVeaz6dI7sUs6P2ck11mFrQYbWarxizoMTDsNCsnQSvnQclvinm6zscAQgQ1BbtNeIusWGdSN8TJJr-CwGSkb6v8DMDyiRZHo998o_CNBT2bRn_QpD7_BNTKFi7TT0RJo_3iEEikSJWF6sdj9kIz9wlo7ewkbGqyxtZRJXSa0H6ZsdIbGM8_yMhKaL5lgiGKSjBOYvZAnOUb9xK7pe8Rtiwgbd2cUxnRHC0lMiv99-2xjpAjRJGqXCx70Qp2UY4ZluB9Xh"/>
+</div>
+<div class="p-8 space-y-6 opacity-40">
+<h3 class="font-headline text-2xl font-bold uppercase tracking-tighter">The Void</h3>
+<p class="font-body text-xs mt-1">The edge of the simulation. No data available.</p>
+<div class="h-1.5 w-full bg-surface-container-highest"></div>
+<div class="flex items-center justify-between text-xs font-label">
+<span class="uppercase">Reward: ???</span>
+<span class="uppercase">Status: UNKNOWN</span>
+</div>
+</div>
+</div>
+<!-- Level Card 4: Terminal Prime -->
+<div class="group relative flex flex-col bg-surface-container-low border border-outline-variant/20 hover:border-primary/50 transition-all duration-500 overflow-hidden cursor-pointer">
+<div class="relative h-48 overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700" data-alt="Macro view of a futuristic circuit board with glowing green and blue tracer lines and light trails" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMkKYUaXIlgLo9eeDKFUOIXBMEmYHjwb40JmS_UWCMtr32N3klMwbMETCll7Cj-DKay2bbB9wNgWMD-cYtnVivaphUKVZmIKDMUValvXLifjAV6DbWB4_sZ1WYfmdmpm-aUH1suLTkBzrQOqmemlbFPTY3P3riv__QsoGYUD5hj80yNgZRJxGh1NIIs6s0IS-3i81i4AW3JNZmgUOY37SNfixGvAAke7zQnqR_RtOCt170PmbW_hDdtV5imLHorDLD1M9W1UFWLa6L"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+</div>
+<div class="p-8 space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline text-2xl font-bold uppercase tracking-tighter text-primary">Terminal Prime</h3>
+<p class="font-body text-xs text-on-surface-variant mt-1">Central processing core of the ECHO network.</p>
+</div>
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl">terminal</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-cyan-400/60">Difficulty Rating</span>
+<div class="flex gap-1">
+<div class="h-1.5 w-6 bg-cyan-400 shadow-[0_0_5px_#00F0FF]"></div>
+<div class="h-1.5 w-6 bg-cyan-400 shadow-[0_0_5px_#00F0FF]"></div>
+<div class="h-1.5 w-6 bg-cyan-400 shadow-[0_0_5px_#00F0FF]"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-cyan-400/60">Time Distortion</span>
+<span class="font-headline text-sm font-bold text-primary">05.2% <span class="text-[10px] opacity-50">STABLE</span></span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10 group-hover:border-primary/30 transition-colors">
+<div class="flex items-center justify-between text-xs font-label">
+<span class="uppercase">Reward: 4200 Cr</span>
+<span class="text-primary group-hover:translate-x-2 transition-transform">LAUNCH_SESSION →</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Level Card 5: Orbital Relay -->
+<div class="group relative flex flex-col bg-surface-container-low border border-outline-variant/20 hover:border-primary/50 transition-all duration-500 overflow-hidden cursor-pointer">
+<div class="relative h-48 overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700" data-alt="Earth from space with glowing satellite orbital pathways and communications network visualization" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqAL9FAmfyMKbpLtixNJvl6SRgRSa8wfWYIQ2yLMDuaB_DJU2Yt8QiHzJeS77KVtZs6U3Ho-Bnqtlr6yBlGOkmeLVX6-Hbs-VjUVYrI0MmWf72pV7yn-RoNqebDbkWk1mUl_JQmg72LQ1YVL-BUsWZJBWDdEHOQVSWYkaBhhaQJOl4_bZvS43aXAWeI47ikMD1id0uYIJtOix2BksEf3RsqiET4mCFFnPiVagtjqc3DWoUVIrwbxIXFQABzJIQ0NhBD8hpLhT51GOH"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+</div>
+<div class="p-8 space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline text-2xl font-bold uppercase tracking-tighter text-primary">Orbital Relay</h3>
+<p class="font-body text-xs text-on-surface-variant mt-1">Satellite chain in geostationary orbit.</p>
+</div>
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl">satellite_alt</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-cyan-400/60">Difficulty Rating</span>
+<div class="flex gap-1">
+<div class="h-1.5 w-6 bg-cyan-400 shadow-[0_0_5px_#00F0FF]"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+<div class="h-1.5 w-6 bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-cyan-400/60">Time Distortion</span>
+<span class="font-headline text-sm font-bold text-primary">02.1% <span class="text-[10px] opacity-50">STABLE</span></span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10 group-hover:border-primary/30 transition-colors">
+<div class="flex items-center justify-between text-xs font-label">
+<span class="uppercase">Reward: 1200 Cr</span>
+<span class="text-primary group-hover:translate-x-2 transition-transform">LAUNCH_SESSION →</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Level Card 6: The Grid (Restricted) -->
+<div class="group relative flex flex-col bg-surface-container-low border border-outline-variant/20 hover:border-tertiary/50 transition-all duration-500 overflow-hidden cursor-pointer">
+<div class="relative h-48 overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-700" data-alt="Abstract 3D digital wireframe grid with neon glowing intersections and sharp geometric patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaRgbiWUElnYg5KOWhI8eNQxOSD7xLdqzuI-x6ucYhli9rWN2lsM4pwJX8lqzemHop8dyU3wkJSdzJnmsN0T_CD9M1coqovANrtwi5rDVl2qxxq9YAPoBIbEv12SRl41fzu-h_XGj3kjv8GHQnIw1y25nnRBnOkKGXHSaF-PhzYAze9q1Eq8wUQEjynPcx9mvSYdWE_8xldHVQb5LZUB5zkgrwbMUBI2wG06l8JH5KYzzcS9-5Wn2SgIazQbrykqId7HIQ0uPF3lx-"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex gap-2">
+<div class="w-2 h-2 bg-tertiary rounded-full animate-ping"></div>
+<span class="font-label text-[8px] text-tertiary uppercase">Signal Detected</span>
+</div>
+</div>
+<div class="p-8 space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline text-2xl font-bold uppercase tracking-tighter text-tertiary-fixed-dim">The Grid</h3>
+<p class="font-body text-xs text-on-surface-variant mt-1">Virtual sub-reality governed by rogue AI.</p>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-3xl">grid_view</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-tertiary/60">Difficulty Rating</span>
+<div class="flex gap-1">
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+<div class="h-1.5 w-6 bg-tertiary shadow-[0_0_5px_#FFC9F4]"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label text-[10px] uppercase text-tertiary/60">Time Distortion</span>
+<span class="font-headline text-sm font-bold text-tertiary">99.9% <span class="text-[10px] opacity-50">UNKNOWN</span></span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10 group-hover:border-tertiary/30 transition-colors">
+<div class="flex items-center justify-between text-xs font-label">
+<span class="uppercase text-tertiary">Reward: 25000 Cr</span>
+<span class="text-tertiary group-hover:translate-x-2 transition-transform">DRIFT_INTO_GRID →</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Status Bar -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 bg-zinc-950/60 backdrop-blur-md h-20 border-t border-cyan-500/20 lg:hidden">
+<a class="flex flex-col items-center justify-center text-cyan-400/40 hover:text-magenta-400 transition-colors" href="#">
+<span class="material-symbols-outlined">speed</span>
+<span class="font-headline text-[10px] uppercase tracking-widest">DASH</span>
+</a>
+<a class="flex flex-col items-center justify-center text-cyan-400/40 hover:text-magenta-400 transition-colors" href="#">
+<span class="material-symbols-outlined">radar</span>
+<span class="font-headline text-[10px] uppercase tracking-widest">SCAN</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-cyan-400 text-zinc-950 p-3 scale-110 shadow-[0_0_15px_#00F0FF]" href="#">
+<span class="material-symbols-outlined">waves</span>
+<span class="font-headline text-[10px] uppercase tracking-widest">DRIFT</span>
+</a>
+<a class="flex flex-col items-center justify-center text-cyan-400/40 hover:text-magenta-400 transition-colors" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-headline text-[10px] uppercase tracking-widest">MAP</span>
+</a>
+<a class="flex flex-col items-center justify-center text-cyan-400/40 hover:text-magenta-400 transition-colors" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span class="font-headline text-[10px] uppercase tracking-widest">LOG</span>
+</a>
+</footer>
+</main>
+<!-- Overlay HUD Elements -->
+<div class="fixed top-24 right-8 z-30 hidden xl:block pointer-events-none">
+<div class="flex flex-col items-end space-y-4">
+<div class="bg-surface-container-low/80 backdrop-blur border-r-4 border-cyan-400 p-4 w-48">
+<p class="font-label text-[10px] text-cyan-400/60 uppercase">Active Pilot</p>
+<p class="font-headline text-lg font-black italic text-cyan-400">DRIFTER_01</p>
+</div>
+<div class="bg-surface-container-low/80 backdrop-blur border-r-4 border-tertiary-container p-4 w-48">
+<p class="font-label text-[10px] text-tertiary-container/60 uppercase">Energy Sync</p>
+<div class="flex items-baseline gap-1">
+<p class="font-headline text-2xl font-black text-tertiary-container">94%</p>
+<span class="text-[10px] text-tertiary-container/40">NOMINAL</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>
