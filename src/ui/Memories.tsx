@@ -6,7 +6,7 @@ interface MemoriesScreenProps {
 
 const MemoriesScreen: React.FC<MemoriesScreenProps> = ({ highestUnlockedLevel }) => {
   const allMemories = [
-    { title: 'Fracture Arrival', date: 'CYCLE 14', imageUrl: 'https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?w=400&q=80' },
+    { title: 'Fracture Arrival', date: 'CYCLE 14', imageUrl: 'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?w=400&q=80' },
     { title: 'The Echo Encounter', date: 'CYCLE 42', imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80' },
     { title: 'Signal Lost', date: 'CYCLE 59', imageUrl: 'https://images.unsplash.com/photo-1618044733300-9472054094ee?w=400&q=80' },
     { title: 'Rebirth', date: 'CYCLE 88', imageUrl: 'https://images.unsplash.com/photo-1515630278258-407f66498911?w=400&q=80' },
