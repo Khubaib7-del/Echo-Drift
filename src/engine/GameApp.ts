@@ -19,23 +19,27 @@ export class GameApp {
   private readonly speed = 5;
   private currentLevelIndex: number = 1;
   private onWinCallback?: (levelPassed: number) => void;
+  private onFailCallback?: () => void;
   private isGrounded = false;
+  private isGameOver = false;
 
   // Level specific mechanics
   private levelData!: LevelData;
-  private platforms: PIXI.Graphics[] = [];
+  private platforms: { graphics: PIXI.Graphics, rect: import('./levels').Rect, type: 'stable' | 'fragile', isCrumbling: boolean, crumbleTimer: number, isGone: boolean }[] = [];
   private doors: { graphics: PIXI.Graphics, rect: Rect, isOpen: boolean }[] = [];
   private buttons: { graphics: PIXI.Graphics, rect: Rect, targetDoorIndex: number, isPressed: boolean }[] = [];
   private goalGraphics!: PIXI.Graphics;
   private hazards: PIXI.Graphics[] = [];
   private enemies: { graphics: PIXI.Graphics, data: import('./levels').EnemyData, originX: number }[] = [];
+  private collectibles: { graphics: PIXI.Graphics, data: import('./levels').CollectibleData }[] = [];
 
   constructor() {
     this.app = new PIXI.Application();
   }
 
-  public async init(canvas: HTMLCanvasElement, onWin?: (levelPassed: number) => void) {
+  public async init(canvas: HTMLCanvasElement, onWin?: (levelPassed: number) => void, onFail?: () => void) {
     this.onWinCallback = onWin;
+    this.onFailCallback = onFail;
 
     await this.app.init({
       canvas,
@@ -49,7 +53,7 @@ export class GameApp {
     this.setupInput();
 
     this.app.ticker.add((time) => {
-        if (this.levelData) this.update(time.deltaTime);
+        if (this.levelData && !this.isGameOver) this.update(time.deltaTime);
     });
   }
 
@@ -58,11 +62,12 @@ export class GameApp {
     this.levelData = LEVELS[levelIndex - 1] || LEVELS[0];
     
     // Clear previous
-    this.platforms.forEach(p => p.destroy());
+    this.platforms.forEach(p => p.graphics.destroy());
     this.doors.forEach(d => d.graphics.destroy());
     this.buttons.forEach(b => b.graphics.destroy());
     this.hazards.forEach(h => h.destroy());
     this.enemies.forEach(e => e.graphics.destroy());
+    this.collectibles.forEach(c => c.graphics.destroy());
     if (this.goalGraphics) this.goalGraphics.destroy();
     if (this.player) this.player.destroy();
     if (this.echo) this.echo.destroy();
@@ -72,6 +77,8 @@ export class GameApp {
     this.buttons = [];
     this.hazards = [];
     this.enemies = [];
+    this.collectibles = [];
+    this.isGameOver = false;
 
     this.setupLevel();
     this.setupEntities();
@@ -92,9 +99,9 @@ export class GameApp {
     this.levelData.platforms.forEach(p => {
        const g = new PIXI.Graphics();
        g.rect(p.x, p.y, p.w, p.h);
-       g.fill(0x1b1b20);
-       g.stroke({ width: 2, color: 0x006970 });
-       this.platforms.push(g);
+       g.fill(p.type === 'fragile' ? 0x2b2b10 : 0x1b1b20); // Fragile platforms are brownish
+       g.stroke({ width: 2, color: p.type === 'fragile' ? 0xaaaa00 : 0x006970 });
+       this.platforms.push({ graphics: g, rect: { ...p }, type: p.type || 'stable', isCrumbling: false, crumbleTimer: 0, isGone: false });
        this.app.stage.addChild(g);
     });
 
@@ -143,6 +150,18 @@ export class GameApp {
        this.enemies.push({ graphics: g, data: { ...e }, originX: e.x });
        this.app.stage.addChild(g);
     });
+
+    // Collectibles
+    this.levelData.collectibles?.forEach(c => {
+       const g = new PIXI.Graphics();
+       g.poly([0,-10, 10,0, 0,10, -10,0]); // Diamond shape
+       g.x = c.x + c.w/2;
+       g.y = c.y + c.h/2;
+       g.fill({ color: c.type === 'gem' ? 0xffff00 : 0x00ff00, alpha: 0.9 });
+       g.stroke({ color: 0xffffff, width: 1 });
+       this.collectibles.push({ graphics: g, data: { ...c, collected: false } });
+       this.app.stage.addChild(g);
+    });
   }
 
   private setupEntities() {
@@ -160,6 +179,11 @@ export class GameApp {
     this.app.stage.addChild(this.player);
   }
 
+  private triggerGameOver() {
+    this.isGameOver = true;
+    if (this.onFailCallback) this.onFailCallback();
+  }
+
   private resetPlayer() {
     this.player.x = this.levelData.spawn.x;
     this.player.y = this.levelData.spawn.y;
@@ -167,6 +191,23 @@ export class GameApp {
     this.history = [];
     this.echo.x = this.player.x;
     this.echo.y = this.player.y;
+    this.isGameOver = false;
+
+    // Reset fragile platforms
+    this.platforms.forEach(p => {
+       if (p.type === 'fragile') {
+          p.isCrumbling = false;
+          p.crumbleTimer = 0;
+          p.isGone = false;
+          p.graphics.alpha = 1;
+       }
+    });
+
+    // Respawn uncollected gems
+    this.collectibles.forEach(c => {
+       c.data.collected = false;
+       c.graphics.visible = true;
+    });
   }
 
   private setupInput() {
@@ -175,7 +216,7 @@ export class GameApp {
   }
 
   // AABB Math
-  private checkOverlap(r1: Rect, r2: Rect): boolean {
+  private checkOverlap(r1: {x:number,y:number,w:number,h:number}, r2: {x:number,y:number,w:number,h:number}): boolean {
     return r1.x < r2.x + r2.w &&
            r1.x + r1.w > r2.x &&
            r1.y < r2.y + r2.h &&
@@ -214,11 +255,15 @@ export class GameApp {
     // Game Logic Checks
     this.updateEchoLogic();
     this.updateEnemies(dt);
-    this.checkInteractions();
+    this.updateCollectibles(dt);
+    this.checkInteractions(dt);
   }
 
-  private getActiveColliders(): Rect[] {
-    const list: Rect[] = [...this.levelData.platforms];
+  private getActiveColliders(): import('./levels').Rect[] {
+    const list: import('./levels').Rect[] = [];
+    this.platforms.forEach(p => {
+       if (!p.isGone) list.push(p.rect);
+    });
     this.doors.forEach(d => {
        if (!d.isOpen) list.push(d.rect);
     });
@@ -241,6 +286,12 @@ export class GameApp {
                if (this.velocity.y > 0) {
                    this.player.y = c.y - playerRect.h;
                    this.isGrounded = true;
+
+                   // If landing on a fragile platform, trigger crumble
+                   const pRef = this.platforms.find(p => p.rect === c);
+                   if (pRef && pRef.type === 'fragile' && !pRef.isCrumbling) {
+                      pRef.isCrumbling = true;
+                   }
                } else if (this.velocity.y < 0) {
                    this.player.y = c.y + c.h;
                }
@@ -283,15 +334,56 @@ export class GameApp {
 
          // Hit detection
          if (this.checkOverlap(pRect, enemy.data)) {
-             this.resetPlayer();
+             this.triggerGameOver();
              return;
          }
      }
   }
 
-  private checkInteractions() {
+  private updateCollectibles(dt: number) {
+     const pRect = {x: this.player.x, y: this.player.y, w: 40, h: 80};
+     for(const c of this.collectibles) {
+         if (!c.data.collected) {
+             c.graphics.rotation += 0.05 * dt; // Rotate the gem
+             if (this.checkOverlap(pRect, c.data)) {
+                 c.data.collected = true;
+                 c.graphics.visible = false;
+                 // (Optional) Here we could emit an event to increment a score state
+             }
+         }
+     }
+  }
+
+  private checkInteractions(dt: number) {
      const pRect = {x: this.player.x, y: this.player.y, w: 40, h: 80};
      const eRect = {x: this.echo.x, y: this.echo.y, w: 40, h: 80};
+
+     // Echo Paradox Hazard (Lethal Echo)
+     // Give buffer so echo doesn't kill you instantly on spawn
+     if (this.history.length > this.timelineDelay - 10) {
+         // Create a slightly smaller inner hitbox so it's not unfairly instant death on tight corners
+         const eRectCore = { x: this.echo.x + 10, y: this.echo.y + 10, w: 20, h: 60 };
+         if (this.checkOverlap(pRect, eRectCore)) {
+             this.triggerGameOver();
+             return;
+         }
+     }
+
+     // Fragile platforms update
+     this.platforms.forEach(p => {
+        if (p.type === 'fragile' && p.isCrumbling && !p.isGone) {
+            p.crumbleTimer += dt;
+            // Shake effect
+            p.graphics.x = (Math.random() - 0.5) * 4;
+            // Fall after ~60 frames
+            if (p.crumbleTimer > 60) {
+                p.isGone = true;
+                p.graphics.alpha = 0;
+            } else if (p.crumbleTimer > 40) {
+                p.graphics.alpha = 0.5;
+            }
+        }
+     });
 
      // Buttons
      this.buttons.forEach((b) => {
@@ -310,7 +402,7 @@ export class GameApp {
      // Hazards
      for(const h of this.levelData.hazards) {
         if (this.checkOverlap(pRect, h)) {
-            this.resetPlayer();
+            this.triggerGameOver();
             return;
         }
      }

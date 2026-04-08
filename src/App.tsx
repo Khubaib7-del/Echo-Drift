@@ -4,11 +4,12 @@ import MainMenu from './ui/MainMenu';
 import HUD from './ui/HUD';
 import LevelSelection from './ui/LevelSelection';
 import MissionSuccess from './ui/MissionSuccess';
+import MissionFailed from './ui/MissionFailed';
 import SettingsScreen from './ui/SettingsScreen';
 import HelpScreen from './ui/HelpScreen';
 import { Tooltip } from './ui/Tooltip';
 
-type GameState = 'MENU' | 'LEVEL_SELECT' | 'PLAYING' | 'SUCCESS' | 'SETTINGS' | 'HELP';
+type GameState = 'MENU' | 'LEVEL_SELECT' | 'PLAYING' | 'SUCCESS' | 'GAME_OVER' | 'SETTINGS' | 'HELP';
 
 function hexToRgbTuple(hex: string) {
   let c = hex.substring(1);
@@ -30,6 +31,7 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<GameApp | null>(null);
   const [gameState, setGameState] = useState<GameState>('MENU');
+  const [activeLevel, setActiveLevel] = useState<number>(1);
   
   // Theme Config persistence
   const [themeConfig, setThemeConfig] = useState(() => {
@@ -67,6 +69,8 @@ function App() {
           return highest;
       });
       setGameState('SUCCESS');
+    }, () => {
+      setGameState('GAME_OVER');
     });
     gameRef.current = game;
 
@@ -101,6 +105,7 @@ function App() {
   const returnToMenu = () => setGameState('MENU');
   
   const startGame = (level: number) => {
+    setActiveLevel(level);
     setGameState('PLAYING');
     if (gameRef.current) {
         gameRef.current.loadLevel(level);
@@ -162,6 +167,13 @@ function App() {
       {gameState === 'SUCCESS' && (
         <MissionSuccess 
            onNext={enterLevelSelect} 
+           onMenu={returnToMenu} 
+           onToggleSettings={() => setGameState('SETTINGS')} 
+        />
+      )}
+      {gameState === 'GAME_OVER' && (
+        <MissionFailed 
+           onRestart={() => startGame(activeLevel)} 
            onMenu={returnToMenu} 
            onToggleSettings={() => setGameState('SETTINGS')} 
         />
