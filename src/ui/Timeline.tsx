@@ -32,10 +32,10 @@ const TimelineScreen: React.FC<TimelineScreenProps> = ({ highestUnlockedLevel })
       
       <div className="w-full max-w-4xl relative">
         {/* Core Timeline Beam running down the middle */}
-        <div className="absolute left-[50%] top-0 bottom-0 w-[1px] bg-gradient-to-b from-theme-primary/10 via-theme-primary to-theme-secondary/20 -translate-x-1/2 hidden md:block"></div>
+        <div className="absolute left-[50%] top-0 bottom-0 w-[1px] bg-gradient-to-b from-theme-primary/10 via-theme-primary to-theme-secondary/20 -translate-x-1/2 block"></div>
         {/* Particles on timeline */}
-        <div className="absolute left-[50%] top-[30%] w-[3px] h-[30px] bg-white hidden md:block animate-[pulse_2s_ease-in-out_infinite] blur-[2px] -translate-x-1/2"></div>
-        <div className="absolute left-[50%] top-[70%] w-[2px] h-[15px] bg-theme-primary hidden md:block animate-[pulse_1s_ease-in-out_infinite] -translate-x-1/2"></div>
+        <div className="absolute left-[50%] top-[30%] w-[3px] h-[30px] bg-white block animate-[pulse_2s_ease-in-out_infinite] blur-[2px] -translate-x-1/2"></div>
+        <div className="absolute left-[50%] top-[70%] w-[2px] h-[15px] bg-theme-primary block animate-[pulse_1s_ease-in-out_infinite] -translate-x-1/2"></div>
 
         <div className="relative space-y-0 flex flex-col pb-12 w-full">
           {baseEvents.map((evt, idx) => {
@@ -43,30 +43,30 @@ const TimelineScreen: React.FC<TimelineScreenProps> = ({ highestUnlockedLevel })
              const isTerminal = idx === baseEvents.length - 1;
 
              return (
-              <div key={idx} className={`relative flex items-center justify-center w-full group py-6 ${isLeft ? 'md:flex-row-reverse' : 'md:flex-row'}`}>
+              <div key={idx} className={`relative flex items-center justify-center w-full group py-6 ${isLeft ? 'flex-row-reverse' : 'flex-row'}`}>
                 
                 {/* Center Node */}
-                <div className="absolute left-[20px] md:left-[50%] top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
+                <div className="absolute left-[50%] top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
                   <div className={`w-6 h-6 rounded-none rotate-45 border border-theme-primary bg-black flex items-center justify-center transition-all duration-500 group-hover:bg-theme-primary group-hover:scale-125 ${isTerminal ? 'shadow-[0_0_20px_rgba(var(--theme-primary),1)] bg-theme-primary/20' : ''}`}>
                     {isTerminal && <div className="w-2 h-2 bg-white rotate-45 animate-ping"></div>}
                   </div>
                 </div>
 
                 {/* Connecting branch line */}
-                <div className={`absolute top-1/2 -translate-y-1/2 h-[1px] bg-theme-primary/30 z-10 transition-all duration-500 group-hover:bg-theme-primary hidden md:block ${isLeft ? 'right-[50%] w-12' : 'left-[50%] w-12'}`}></div>
+                <div className={`absolute top-1/2 -translate-y-1/2 h-[1px] bg-theme-primary/30 z-10 transition-all duration-500 group-hover:bg-theme-primary block ${isLeft ? 'right-[50%] w-12' : 'left-[50%] w-12'}`}></div>
 
                 {/* Content Box */}
-                <div className={`w-full md:w-1/2 relative pl-16 md:pl-0 ${isLeft ? 'md:pr-16 text-left md:text-right' : 'md:pl-16 text-left'}`}>
+                <div className={`w-1/2 relative px-8 ${isLeft ? 'text-right' : 'text-left'}`}>
                   <div className={`glass-panel p-6 border transition-all duration-500 inline-block w-full 
                     ${isTerminal ? 'border-theme-primary bg-theme-primary/5' : 'border-white/5 hover:border-theme-primary/40 bg-white/5 hover:bg-black'}
-                    group-hover:translate-x-2 ${isLeft ? 'md:group-hover:-translate-x-2' : ''}
+                    ${isLeft ? 'group-hover:-translate-x-2' : 'group-hover:translate-x-2'}
                   `}>
-                    <div className={`flex flex-col ${isLeft ? 'md:items-end' : 'md:items-start'} mb-3`}>
+                    <div className={`flex flex-col ${isLeft ? 'items-end' : 'items-start'} mb-3`}>
                        <span className="text-theme-primary font-mono text-sm tracking-[0.2em]">{evt.year}</span>
                        <h3 className="text-xl font-black text-white uppercase tracking-wider">{evt.title}</h3>
                     </div>
                     
-                    <p className={`text-zinc-400 font-body text-sm leading-relaxed ${isLeft ? 'md:text-right' : ''}`}>{evt.desc}</p>
+                    <p className={`text-zinc-400 font-body text-sm leading-relaxed ${isLeft ? 'text-right' : ''}`}>{evt.desc}</p>
                   </div>
                 </div>
               </div>

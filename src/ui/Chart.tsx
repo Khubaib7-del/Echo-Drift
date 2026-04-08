@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ChartScreenProps {
   highestUnlockedLevel: number;
 }
 
 const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
-  // We have 11 total sectors (1-10 + Beta). Let's pick 6 core metrics
+  const [liveData, setLiveData] = useState<number[]>([]);
+  
+  useEffect(() => {
+     // Generate live trembling data
+     const interval = setInterval(() => {
+        setLiveData(Array.from({length: 20}).map(() => 40 + Math.random() * 60));
+     }, 100);
+     return () => clearInterval(interval);
+  }, []);
+
   const calculateSectorProgress = (sectorId: number) => {
     const startLevel = (sectorId - 1) * 5;
     const completedLevels = Math.max(0, Math.min(5, highestUnlockedLevel - startLevel - 1));
@@ -22,11 +31,10 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
   ];
 
   const sides = chartData.length;
-  // Radar radius
   const R = 40;
   const center = 50;
 
-  // Generate SVG path for the radar area
+  // Radar 
   const radarPoints = chartData.map((d, i) => {
     const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
     const r = (d.value / 100) * R;
@@ -35,93 +43,100 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
     return `${x},${y}`;
   }).join(' ');
 
-  // Generate grid rings
-  const ringPercentages = [25, 50, 75, 100];
-  const rings = ringPercentages.map(pct => {
-    return Array.from({ length: sides }).map((_, i) => {
-        const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
-        const r = (pct / 100) * R;
-        const x = center + Math.cos(angle) * r;
-        const y = center + Math.sin(angle) * r;
-        return `${x},${y}`;
-    }).join(' ');
-  });
+  // Live Area path
+  const areaPointsStr = liveData.map((d, i) => {
+     const x = (i / (liveData.length - 1)) * 100;
+     const y = 100 - d;
+     return `${x},${y}`;
+  }).join(' ');
 
   return (
     <div className="w-full h-full flex flex-col p-12 overflow-y-auto animated-scrollbar">
-      <div className="flex items-center gap-4 mb-8">
-        <span className="material-symbols-outlined text-6xl text-theme-primary">radar</span>
+      <div className="flex items-center gap-4 mb-8 shrink-0">
+        <span className="material-symbols-outlined text-6xl text-theme-primary">query_stats</span>
         <div>
-          <h1 className="text-4xl font-headline font-black text-white uppercase tracking-widest">Temporal Diagnostics</h1>
-          <p className="text-theme-primary/60 font-body">Node synchronization radar telemetry</p>
+          <h1 className="text-4xl font-headline font-black text-white uppercase tracking-widest">Diagnostics grid</h1>
+          <p className="text-theme-primary/60 font-body">Multiple node telemetry arrays online</p>
         </div>
       </div>
 
-      <div className="w-full flex-1 glass-panel border border-theme-primary/20 p-8 flex lg:flex-row flex-col gap-12 items-center justify-center relative min-h-[500px]">
-        {/* Radar SVG Container */}
-        <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center z-10">
-            {/* Spinning background elements */}
-            <div className="absolute inset-0 border border-theme-primary/10 rounded-full animate-[spin_60s_linear_infinite]"></div>
-            <div className="absolute inset-[10%] border-t border-r border-theme-secondary/20 rounded-full animate-[spin_40s_linear_reverse_infinite]"></div>
-            
-            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-[0_0_15px_rgba(var(--theme-primary),0.5)]">
-               
-               {/* Background web/grid */}
-               {rings.map((pts, idx) => (
-                  <polygon key={idx} points={pts} className="fill-none stroke-zinc-800 stroke-[0.3]" strokeDasharray={idx === 3 ? "" : "1,1"} />
-               ))}
-
-               {/* Axis Lines */}
-               {Array.from({ length: sides }).map((_, i) => {
-                  const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
-                  const x = center + Math.cos(angle) * R;
-                  const y = center + Math.sin(angle) * R;
-                  return <line key={`line-${i}`} x1={center} y1={center} x2={x} y2={y} className="stroke-zinc-700 stroke-[0.2]" />
-               })}
-
-               {/* Data Area */}
-               <polygon points={radarPoints} className="fill-theme-primary/20 stroke-theme-primary stroke-[0.5] transition-all duration-1000" />
-
-               {/* Hover Points & Labels */}
-               {chartData.map((d, i) => {
-                  const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
-                  const r = (d.value / 100) * R;
-                  const px = center + Math.cos(angle) * r;
-                  const py = center + Math.sin(angle) * r;
-
-                  const textR = R + 8;
-                  const tx = center + Math.cos(angle) * textR;
-                  const ty = center + Math.sin(angle) * textR;
-
-                  return (
-                      <g key={i} className="group">
-                         <circle cx={px} cy={py} r="1.5" className="fill-white drop-shadow-[0_0_5px_rgba(255,255,255,1)] transition-all" />
-                         <text x={tx} y={ty} dominantBaseline="middle" textAnchor="middle" className="text-[3px] font-mono fill-zinc-500 uppercase group-hover:fill-theme-primary transition-colors">{d.label}</text>
-                      </g>
-                  )
-               })}
-            </svg>
-        </div>
-
-        {/* Legend / Readout */}
-        <div className="flex flex-col gap-4 z-10 w-full max-w-[300px]">
-           <h3 className="font-headline text-theme-primary uppercase tracking-widest border-b border-theme-primary/30 pb-2 mb-2 flex justify-between">
-              <span>Sector Integrity</span>
-              <span className="material-symbols-outlined text-[16px] animate-pulse">sensors</span>
-           </h3>
-           
-           {chartData.map((d, i) => (
-              <div key={i} className="flex justify-between items-center group cursor-default">
-                 <span className="font-mono text-xs text-zinc-400 group-hover:text-white transition-colors">{d.label}</span>
-                 <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm text-theme-primary font-bold">{d.value}%</span>
-                    <div className="w-16 h-1 bg-zinc-900 border border-zinc-800 relative overflow-hidden">
-                       <div className="absolute top-0 left-0 h-full bg-theme-primary group-hover:bg-white transition-all duration-1000" style={{ width: `${d.value}%` }}></div>
-                    </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full max-w-7xl mx-auto pb-12">
+          
+          {/* Main Radar Card */}
+          <div className="glass-panel border-theme-primary/20 p-6 flex flex-col items-center justify-center relative min-h-[400px] lg:col-span-2 shadow-[inset_0_0_50px_rgba(var(--theme-primary),0.05)]">
+             <div className="absolute top-4 left-4 text-theme-primary font-mono text-xs tracking-widest">01 // MACRO-SYNCHRONIZATION RADAR</div>
+             <div className="w-full h-full flex items-center justify-center pt-8">
+                 <div className="w-[300px] aspect-square relative -translate-x-12">
+                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-[0_0_15px_rgba(var(--theme-primary),0.5)]">
+                       {/* Web Grid */}
+                       {[25,50,75,100].map((pct, idx) => {
+                          const pts = Array.from({length: sides}).map((_, i) => {
+                             const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+                             const r = (pct/100) * R;
+                             return `${center + Math.cos(angle)*r},${center + Math.sin(angle)*r}`;
+                          }).join(' ');
+                          return <polygon key={idx} points={pts} className="fill-none stroke-zinc-800 stroke-[0.3]" strokeDasharray={idx === 3 ? "" : "1,1"} />
+                       })}
+                       {/* Axis */}
+                       {Array.from({length: sides}).map((_, i) => {
+                          const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+                          return <line key={i} x1={center} y1={center} x2={center + Math.cos(angle)*R} y2={center + Math.sin(angle)*R} className="stroke-zinc-700 stroke-[0.2]" />
+                       })}
+                       {/* Radar Data Area */}
+                       <polygon points={radarPoints} className="fill-theme-primary/20 stroke-theme-primary stroke-[0.5] transition-all duration-1000" />
+                       {/* Points */}
+                       {chartData.map((d, i) => {
+                          const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+                          const r = (d.value/100) * R;
+                          const px = center + Math.cos(angle)*r;
+                          const py = center + Math.sin(angle)*r;
+                          return <circle key={i} cx={px} cy={py} r="1.5" className="fill-white" />
+                       })}
+                    </svg>
                  </div>
+                 
+                 <div className="flex flex-col gap-3 w-[250px] border-l border-theme-primary/20 pl-6">
+                   {chartData.map((d, i) => (
+                      <div key={i} className="w-full group">
+                         <div className="flex justify-between font-mono text-[10px] text-zinc-400 mb-1">
+                            <span>{d.label}</span>
+                            <span className="text-theme-primary">{d.value}%</span>
+                         </div>
+                         <div className="w-full h-[2px] bg-zinc-900 border border-zinc-800 relative">
+                            <div className="absolute top-0 left-0 h-full bg-theme-primary transition-all duration-1000 group-hover:shadow-[0_0_8px_rgba(var(--theme-primary),1)]" style={{ width: `${d.value}%` }}></div>
+                         </div>
+                      </div>
+                   ))}
+                 </div>
+             </div>
+          </div>
+
+          {/* Secondary Live Area Graph */}
+          <div className="glass-panel border-white/5 p-6 relative h-[250px] group">
+              <div className="absolute top-4 left-4 text-theme-secondary font-mono text-[10px] tracking-widest">02 // ECHO DIVERGENCE (LIVE)</div>
+              <div className="absolute inset-0 pt-16 px-4 pb-4 w-full h-[250px]">
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                     <polygon points={`0,100 ${areaPointsStr} 100,100`} className="fill-theme-secondary/10" />
+                     <polyline points={areaPointsStr} className="fill-none stroke-theme-secondary stroke-[0.8] drop-shadow-[0_0_5px_rgba(var(--theme-secondary),0.8)]" vectorEffect="non-scaling-stroke" />
+                  </svg>
               </div>
-           ))}
-        </div>
+              <div className="absolute bottom-4 right-4 text-xs font-mono text-zinc-600 animate-pulse">STREAMING_</div>
+          </div>
+
+          {/* Tertiary Stability Bar Graph */}
+          <div className="glass-panel border-white/5 p-6 relative h-[250px]">
+              <div className="absolute top-4 left-4 text-white font-mono text-[10px] tracking-widest">03 // HARDWARE METRICS</div>
+              <div className="w-full h-full pt-12 flex items-end justify-between gap-2 px-2">
+                 {[70, 85, 45, 90, 60, 30, 80, 95].map((val, idx) => (
+                    <div key={idx} className="relative w-full bg-zinc-900/50 rounded-t-sm group" style={{ height: '100%' }}>
+                        <div className="absolute bottom-0 w-full bg-white transition-all group-hover:bg-theme-primary" style={{ height: `${val}%` }}>
+                           <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-mono text-theme-primary">{val}</div>
+                        </div>
+                    </div>
+                 ))}
+              </div>
+          </div>
+
       </div>
     </div>
   );

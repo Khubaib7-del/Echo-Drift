@@ -166,7 +166,7 @@ function App() {
       )}
       {gameState === 'SUCCESS' && (
         <MissionSuccess 
-           onNext={enterLevelSelect} 
+           onNext={() => startGame(activeLevel + 1)} 
            onMenu={returnToMenu} 
            onToggleSettings={() => setGameState('SETTINGS')} 
         />
