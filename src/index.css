@@ -4,6 +4,13 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+:root {
+  --theme-primary: 0 240 255;
+  --theme-secondary: 255 0 255;
+  --theme-bg: #131318;
+}
+
+
 @layer base {
   body {
     @apply bg-background text-on-background font-body overflow-hidden h-screen w-screen;

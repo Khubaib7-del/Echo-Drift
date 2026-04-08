@@ -57,12 +57,13 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
         </div>
       </div>
 
-      {/* Background Silhouette - THE ROBOT IMAGE */}
-      <div className="absolute inset-0 pointer-events-none opacity-10 flex items-center justify-end">
+      {/* Background Silhouette - THE ROBOT/SCENE IMAGE */}
+      <div className="absolute inset-0 z-0 opacity-10 flex items-center justify-end pointer-events-none">
+          <div className="absolute inset-0 bg-background mix-blend-multiply z-10 block"></div>
           <img 
-              className="h-full object-contain filter grayscale invert brightness-200 contrast-150 scale-125 translate-x-1/4" 
-              alt="Robot Background" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7ofsQP27LBp5Bh9wm9fMnu648Nv40oAjv-gS-Jl5qMrrv896DUj8nThk31r9l1ImmSfAU-L8ncNF3ResCWUOlRV8lk6-72EgZPK38_ZmZDCpQtXKJmp4-vIWbijrB5VDre9btO9VwpDo79TtNQKHrQUd__yFphRB3yEhFaDxAd_zwUJotjHTZCE7yeaVWP-KStO4N9sEKwwyTJKwyH3yzGEvVJgYumEt898-KOahUtZSrlJFJqr4439bf_h1B2IlVMANen_Uz9fS7"
+              className="w-full h-full object-cover filter grayscale contrast-125 sepia hover:grayscale-0 transition-all duration-1000" 
+              alt="Sector Background" 
+              src="https://images.unsplash.com/photo-1544866567-c2057262ba94?q=80&w=2070&auto=format&fit=crop"
           />
       </div>
 
@@ -86,44 +87,76 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
         </button>
       </div>
 
-      {/* Level Cards - Scrollable */}
-      <div className="w-full max-w-5xl flex-1 relative z-10 px-8 pb-32 overflow-y-auto animated-scrollbar">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {levels.map((lvl) => (
-            <button
-                key={lvl.id}
-                onClick={() => lvl.status === 'UNLOCKED' && onSelectLevel(lvl.id)}
-                className={`
-                relative flex flex-col items-start p-8 transition-all duration-300 group/card
-                ${lvl.status === 'UNLOCKED' ? 'hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,240,255,0.15)] cursor-pointer hover:border-cyan-400' : 'opacity-40 cursor-not-allowed grayscale border-zinc-800'}
-                bg-surface-container-high border-t border-l ${lvl.color}
-                before:absolute before:right-0 before:top-0 before:w-6 before:h-6 before:bg-background before:clip-path-custom
-                `}
-            >
-                <div className="w-12 h-12 mb-6 bg-surface-container-lowest border border-white/5 flex items-center justify-center group-hover/card:bg-cyan-400 group-hover/card:text-zinc-950 transition-colors">
-                {lvl.status === 'UNLOCKED' ? (
-                    <span className="font-headline text-xl text-white group-hover/card:text-zinc-950 font-black">{lvl.id.toString().padStart(2, '0')}</span>
-                ) : (
-                    <span className="material-symbols-outlined text-red-500/50">lock</span>
-                )}
-                </div>
-                
-                <h3 className="text-xl font-black font-headline uppercase mb-2 text-white text-left group-hover/card:text-cyan-400 transition-colors">{lvl.name}</h3>
-                
-                <div className="w-full h-[1px] bg-white/5 my-4"></div>
-                
-                <div className="w-full flex justify-between items-center text-xs font-headline tracking-widest uppercase">
-                <span className={lvl.status === 'UNLOCKED' ? 'text-cyan-400' : 'text-red-500/50'}>{lvl.status}</span>
-                <span className="text-zinc-600">SYNC: {lvl.sync}</span>
-                </div>
-                
-                {/* Status light */}
-                {lvl.status === 'UNLOCKED' && (
-                <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-cyan-400 animate-pulse-slow shadow-[0_0_8px_#00F0FF]"></div>
-                )}
-            </button>
-            ))}
+      <div className="w-full max-w-7xl flex-1 relative z-10 px-8 pb-32 flex gap-8">
+        {/* Main Levels Grid */}
+        <div className="flex-1 overflow-y-auto animated-scrollbar pr-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {levels.map((lvl) => (
+              <button
+                  key={lvl.id}
+                  onClick={() => lvl.status === 'UNLOCKED' && onSelectLevel(lvl.id)}
+                  className={`
+                  relative flex flex-col items-start p-6 transition-all duration-300 group/card
+                  ${lvl.status === 'UNLOCKED' ? 'hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,240,255,0.15)] cursor-pointer hover:border-cyan-400 bg-surface-container-high/80 backdrop-blur border-t border-l border-cyan-400/50' : 'opacity-40 cursor-not-allowed grayscale border-zinc-800 bg-surface-container-high/20'}
+                  before:absolute before:right-0 before:top-0 before:w-6 before:h-6 before:bg-background before:clip-path-custom
+                  `}
+              >
+                  <div className="w-10 h-10 mb-4 bg-surface-container-lowest border border-white/5 flex items-center justify-center group-hover/card:bg-cyan-400 group-hover/card:text-zinc-950 transition-colors">
+                  {lvl.status === 'UNLOCKED' ? (
+                      <span className="font-headline text-lg text-white group-hover/card:text-zinc-950 font-black">{lvl.id.toString().padStart(2, '0')}</span>
+                  ) : (
+                      <span className="material-symbols-outlined text-red-500/50 text-sm">lock</span>
+                  )}
+                  </div>
+                  
+                  <h3 className="text-sm font-black font-headline uppercase mb-2 text-white text-left group-hover/card:text-cyan-400 transition-colors w-full break-words">{lvl.name}</h3>
+                  
+                  <div className="w-full h-[1px] bg-white/5 my-3"></div>
+                  
+                  <div className="w-full flex justify-between items-center text-[10px] font-headline tracking-widest uppercase">
+                  <span className={lvl.status === 'UNLOCKED' ? 'text-cyan-400 font-bold' : 'text-red-500/50'}>{lvl.status}</span>
+                  <span className="text-zinc-500">SYNC: {lvl.sync}</span>
+                  </div>
+                  
+                  {/* Status light */}
+                  {lvl.status === 'UNLOCKED' && (
+                  <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse-slow shadow-[0_0_8px_#00F0FF]"></div>
+                  )}
+              </button>
+              ))}
+          </div>
         </div>
+
+        {/* Side Panel Guide */}
+        <aside className="w-80 shrink-0 h-full hidden lg:flex flex-col">
+           <div className="w-full glass-panel border border-cyan-500/20 p-6 flex-1 flex flex-col items-start bg-zinc-950/80 backdrop-blur-xl">
+              <div className="w-12 h-12 border border-cyan-400 flex items-center justify-center mb-6">
+                 <span className="material-symbols-outlined text-cyan-400 text-2xl font-variation-[FILL_1]">travel_explore</span>
+              </div>
+              <h3 className="text-xl font-headline font-black text-white uppercase tracking-widest mb-2 shadow-text">Sector Guide</h3>
+              <p className="text-cyan-400/80 font-body text-xs leading-relaxed mb-6">
+                Prepare for optimal drift synchronization by reviewing sector anomaly reports.
+              </p>
+              
+              <div className="w-full border-t border-white/5 pt-4 space-y-4">
+                 <div className="flex flex-col gap-1">
+                    <span className="font-headline font-bold text-[10px] text-cyan-400 uppercase tracking-widest text-left mt-2">Objective:</span>
+                    <p className="text-xs text-zinc-400">Navigate chronological distortions to reclaim fragmented code modules.</p>
+                 </div>
+                 <div className="flex flex-col gap-1">
+                    <span className="font-headline font-bold text-[10px] text-magenta-400 uppercase tracking-widest text-left mt-2">Hazard Warning:</span>
+                    <p className="text-xs text-zinc-400">Avoid timeline spikes and redundant loops to maintain stable sync rate.</p>
+                 </div>
+              </div>
+
+              <div className="mt-auto w-full pt-4 border-t border-cyan-500/20">
+                 <div className="w-full bg-cyan-900/20 text-cyan-400 text-[10px] font-headline uppercase p-2 border border-cyan-500/30 text-center flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                    Terminal Guide Online
+                 </div>
+              </div>
+           </div>
+        </aside>
       </div>
     </div>
   );

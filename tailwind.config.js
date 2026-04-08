@@ -54,7 +54,21 @@ export default {
         "on-tertiary-fixed": "#380038",
         "surface-dim": "#131318",
         "on-tertiary": "#5b005b",
-        "on-tertiary-container": "#a900a9"
+        "on-tertiary-container": "#a900a9",
+        "theme-primary": "rgb(var(--theme-primary) / <alpha-value>)",
+        "theme-secondary": "rgb(var(--theme-secondary) / <alpha-value>)",
+        "theme-bg": "var(--theme-bg)",
+        "cyan": {
+          400: "rgb(var(--theme-primary) / <alpha-value>)",
+          500: "rgb(var(--theme-primary) / <alpha-value>)",
+          900: "rgb(var(--theme-primary) / <alpha-value>)",
+          950: "rgb(var(--theme-primary) / <alpha-value>)",
+        },
+        "magenta": {
+          400: "rgb(var(--theme-secondary) / <alpha-value>)",
+          500: "rgb(var(--theme-secondary) / <alpha-value>)",
+          900: "rgb(var(--theme-secondary) / <alpha-value>)",
+        }
       },
       fontFamily: {
         "headline": ['"Space Grotesk"', 'sans-serif'],

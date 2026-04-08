@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import TimelineScreen from './Timeline';
 import ChartScreen from './Chart';
 import MemoriesScreen from './Memories';
+import { Tooltip } from './Tooltip';
 
 type Tab = 'MISSION' | 'TIMELINE' | 'CHART' | 'MEMORIES';
 
 interface MainMenuProps {
   onStart: () => void; // Navigates to Level Selection
   onToggleSettings: () => void;
+  onHelp: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ onStart, onToggleSettings }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ onStart, onToggleSettings, onHelp }) => {
   const [activeTab, setActiveTab] = useState<Tab>('MISSION');
 
   const getTabClass = (tab: Tab) => {
@@ -45,16 +47,28 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onToggleSettings }) => {
           ECHO DRIFT
         </div>
         <div className="flex items-center gap-6 pointer-events-auto">
-          <button className="hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all p-2 flex items-center gap-2 group">
-            <span className="material-symbols-outlined text-cyan-400">timeline</span>
-            <span className="font-headline text-cyan-400/60 uppercase tracking-widest text-xs group-hover:text-cyan-300">HIST_BUFF</span>
-          </button>
-          <button 
-            onClick={onToggleSettings}
-            className="hover:bg-cyan-500/10 hover:skew-x-[-12deg] transition-all p-2 group"
-          >
-            <span className="material-symbols-outlined text-cyan-400">settings</span>
-          </button>
+          <Tooltip content="Launch Chronological Log View" position="bottom">
+            <button onClick={() => setActiveTab('TIMELINE')} className="hover:bg-theme-secondary/10 hover:skew-x-[-12deg] transition-all p-2 flex items-center gap-2 group cursor-pointer">
+              <span className="material-symbols-outlined text-cyan-400">timeline</span>
+              <span className="font-headline text-cyan-400/60 uppercase tracking-widest text-xs group-hover:text-cyan-300">HIST_BUFF</span>
+            </button>
+          </Tooltip>
+          <Tooltip content="Operator's Manual" position="bottom">
+            <button 
+              onClick={onHelp}
+              className="hover:bg-theme-secondary/10 hover:skew-x-[12deg] transition-all p-2 group"
+            >
+              <span className="material-symbols-outlined text-theme-primary group-hover:text-theme-secondary">support</span>
+            </button>
+          </Tooltip>
+          <Tooltip content="System Calibration" position="bottom">
+            <button 
+              onClick={onToggleSettings}
+              className="hover:bg-theme-primary/10 hover:skew-x-[-12deg] transition-all p-2 group"
+            >
+              <span className="material-symbols-outlined text-theme-primary">settings</span>
+            </button>
+          </Tooltip>
         </div>
       </nav>
 
@@ -136,7 +150,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onToggleSettings }) => {
                       <span className="material-symbols-outlined text-zinc-950 text-4xl group-hover:translate-x-2 transition-transform">arrow_forward</span>
                   </button>
 
-                  <button onClick={onStart} className="col-span-4 glass-panel border border-cyan-500/10 p-6 flex flex-col justify-between hover:bg-cyan-500/5 transition-colors group">
+                  <button onClick={onToggleSettings} className="col-span-4 glass-panel border border-cyan-500/10 p-6 flex flex-col justify-between hover:bg-cyan-500/5 transition-colors group">
                       <span className="material-symbols-outlined text-cyan-400 text-3xl mb-4 text-left">settings_input_component</span>
                       <div className="text-left">
                       <div className="text-cyan-400 font-headline font-bold text-lg uppercase leading-none mb-1">CALIBRATION</div>
@@ -144,7 +158,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onToggleSettings }) => {
                       </div>
                   </button>
 
-                  <button onClick={onStart} className="col-span-5 glass-panel border border-magenta-500/10 p-6 flex flex-col justify-between hover:bg-magenta-900/10 transition-colors group">
+                  <button onClick={() => setActiveTab('MEMORIES')} className="col-span-5 glass-panel border border-magenta-500/10 p-6 flex flex-col justify-between hover:bg-magenta-900/10 transition-colors group">
                       <span className="material-symbols-outlined text-tertiary-fixed-dim text-3xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
                       <div className="text-left">
                       <div className="text-tertiary-fixed-dim font-headline font-bold text-lg uppercase leading-none mb-1">MISSION LOG</div>
@@ -183,19 +197,19 @@ const MainMenu: React.FC<MainMenuProps> = ({ onStart, onToggleSettings }) => {
       {/* Global Bottom Navbar - Redesigned to fix shaking and add hover effects */}
       <footer className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 bg-zinc-950/80 backdrop-blur-md h-20 border-t border-cyan-500/20 shadow-[0_-10px_40px_rgba(0,240,255,0.1)]">
         {[
-          { icon: 'speed', label: 'DASH' },
-          { icon: 'radar', label: 'SCAN' },
-          { icon: 'waves', label: 'DRIFT', special: true },
-          { icon: 'explore', label: 'MAP' },
-          { icon: 'terminal', label: 'LOG' }
+          { icon: 'speed', label: 'DASH', action: () => setActiveTab('MISSION') },
+          { icon: 'radar', label: 'SCAN', action: () => setActiveTab('CHART') },
+          { icon: 'waves', label: 'DRIFT', special: true, action: onStart },
+          { icon: 'explore', label: 'MAP', action: () => setActiveTab('MISSION') },
+          { icon: 'terminal', label: 'LOG', action: () => setActiveTab('MEMORIES') }
         ].map((item, id) => (
           item.special ? (
-            <div className="flex flex-col items-center justify-center bg-cyan-400 text-zinc-950 p-3 scale-110 shadow-[0_0_15px_#00F0FF] hover-glitch-jitter cursor-pointer transition-transform group">
+            <div key={id} onClick={item.action} className="flex flex-col items-center justify-center bg-cyan-400 text-zinc-950 p-3 scale-110 shadow-[0_0_15px_#00F0FF] hover-glitch-jitter cursor-pointer transition-transform group">
                 <span className="material-symbols-outlined font-variation-[FILL_1]">waves</span>
                 <span className="font-headline font-black text-[10px] uppercase tracking-widest mt-1">DRIFT</span>
             </div>
           ) : (
-            <div key={id} className="flex flex-col items-center justify-center text-cyan-400/40 hover:text-cyan-200 hover:drop-shadow-[0_0_8px_#00f0ff] hover:scale-110 transition-all cursor-pointer group">
+            <div key={id} onClick={item.action} className="flex flex-col items-center justify-center text-cyan-400/40 hover:text-cyan-200 hover:drop-shadow-[0_0_8px_#00f0ff] hover:scale-110 transition-all cursor-pointer group">
                 <span className="material-symbols-outlined group-hover:animate-pulse">{item.icon}</span>
                 <span className="font-headline text-[10px] uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{item.label}</span>
             </div>
