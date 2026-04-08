@@ -1,9 +1,11 @@
+import React from 'react';
+
 interface ChartScreenProps {
   highestUnlockedLevel: number;
 }
 
 const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
-  // We have 11 total sectors (1-10 + Beta). Let's pick 5 core milestone sectors to display on the chart
+  // We have 11 total sectors (1-10 + Beta). Let's pick 7 milestone points
   const calculateSectorProgress = (sectorId: number) => {
     const startLevel = (sectorId - 1) * 5;
     const completedLevels = Math.max(0, Math.min(5, highestUnlockedLevel - startLevel - 1));
@@ -11,12 +13,23 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
   };
 
   const chartData = [
-    { label: 'SECTOR_1', value: calculateSectorProgress(1) },
-    { label: 'SECTOR_3', value: calculateSectorProgress(3) },
-    { label: 'SECTOR_6', value: calculateSectorProgress(6) },
-    { label: 'SECTOR_9', value: calculateSectorProgress(9) },
-    { label: 'S_BETA', value: calculateSectorProgress(11) }
+    { label: 'ALPHA', value: calculateSectorProgress(1) },
+    { label: 'S_02', value: calculateSectorProgress(2) },
+    { label: 'S_04', value: calculateSectorProgress(4) },
+    { label: 'S_06', value: calculateSectorProgress(6) },
+    { label: 'S_08', value: calculateSectorProgress(8) },
+    { label: 'S_10', value: calculateSectorProgress(10) },
+    { label: 'BETA', value: calculateSectorProgress(11) }
   ];
+
+  // Map values to 0-100 coordinates for SVG viewBox
+  const points = chartData.map((d, i) => {
+    const x = (i / (chartData.length - 1)) * 100;
+    const y = 100 - d.value; 
+    return `${x},${y}`;
+  }).join(' ');
+
+  const areaPath = `0,100 ${points} 100,100`;
 
   return (
     <div className="w-full h-full flex flex-col p-12 overflow-y-auto animated-scrollbar">
@@ -28,36 +41,54 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
         </div>
       </div>
 
-      <div className="w-full max-w-4xl glass-panel border border-theme-primary/20 p-8 flex flex-col items-center">
-        <h2 className="w-full text-left text-theme-primary font-headline uppercase tracking-widest text-sm mb-8 border-b border-theme-primary/20 pb-2">Sector Sync Analysis</h2>
+      <div className="w-full max-w-5xl glass-panel border border-theme-primary/20 p-8 flex flex-col items-center relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-theme-primary/5 blur-3xl pointer-events-none"></div>
+
+        <h2 className="w-full text-left text-theme-primary font-headline uppercase tracking-widest text-sm mb-12 border-b border-theme-primary/20 pb-2 flex justify-between">
+            <span>Sector Sync Analysis</span>
+            <span className="text-zinc-500 font-mono tracking-tighter">DATA: LIVE</span>
+        </h2>
         
-        <div className="flex items-end justify-between w-full h-64 px-4 pb-8 border-b border-zinc-800 relative">
-          {/* Horizontal Grid lines */}
+        <div className="w-full h-80 relative font-mono text-[10px] uppercase">
+          {/* Y-Axis Labels & Grid Lines */}
           {[0, 25, 50, 75, 100].map(val => (
-            <div key={val} className="absolute w-full border-t border-zinc-800/50 flex justify-between" style={{ bottom: `${val}%` }}>
-              <span className="text-[10px] text-zinc-600 -translate-y-1/2 -translate-x-full pr-2">{val}%</span>
+            <div key={val} className="absolute w-full border-t border-zinc-800/80 flex justify-between z-0" style={{ bottom: `${val}%` }}>
+              <span className="text-zinc-500 -translate-y-1/2 -translate-x-12 absolute left-0 text-right w-8">{val}%</span>
             </div>
           ))}
 
-          {chartData.map((data, idx) => (
-            <div key={idx} className="flex flex-col items-center group w-1/6 z-10 relative">
-                {/* Value tooltip */}
-                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950 text-theme-primary text-xs py-1 px-3 border border-theme-primary/50 clip-slant font-black">
-                  {data.value}%
-                </div>
-                {/* Bar */}
-                <div className="w-full bg-zinc-800 flex items-end overflow-hidden">
-                    <div 
-                        className="w-full bg-theme-primary hover:bg-white transition-all group-hover:shadow-[0_0_15px_rgba(var(--theme-primary),0.8)] relative before:absolute before:inset-0 before:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] before:opacity-20"
-                        style={{ height: `${data.value}%` }}
-                    ></div>
-                </div>
-                {/* Label */}
-                <div className="mt-4 text-xs font-headline uppercase text-zinc-400 group-hover:text-theme-primary transition-colors tracking-widest font-bold">
-                    {data.label}
-                </div>
-            </div>
-          ))}
+          {/* Core SVG Chart */}
+          <div className="absolute inset-0 z-10">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
+                {/* Area under line */}
+                <polygon points={areaPath} className="fill-theme-primary/20" />
+                {/* Main line */}
+                <polyline points={points} className="fill-none stroke-theme-primary stroke-[0.5] drop-shadow-[0_0_5px_rgba(var(--theme-primary),1)]" vectorEffect="non-scaling-stroke" />
+                
+                {/* Data Points */}
+                {chartData.map((d, i) => {
+                    const x = (i / (chartData.length - 1)) * 100;
+                    const y = 100 - d.value;
+                    return (
+                       <g key={i} className="group cursor-crosshair">
+                           <line x1={x} y1="100" x2={x} y2={y} className="stroke-theme-primary/30 stroke-[0.2] stroke-dasharray-[1,1]" vectorEffect="non-scaling-stroke"/>
+                           <circle cx={x} cy={y} r="1.5" className="fill-theme-secondary group-hover:fill-white group-hover:r-2 transition-all shadow-[0_0_10px_rgba(var(--theme-secondary),1)]" />
+                       </g>
+                    );
+                })}
+            </svg>
+          </div>
+
+          {/* X-Axis Labels */}
+          <div className="absolute top-[100%] left-0 w-full flex justify-between pt-4 text-theme-primary/70 tracking-widest z-20 font-bold">
+            {chartData.map((d, i) => (
+              <div key={i} className="-translate-x-1/2 flex flex-col items-center gap-2 group cursor-default">
+                 <span className="w-1 h-3 bg-zinc-800 group-hover:bg-theme-secondary transition-colors"></span>
+                 <span className="group-hover:text-white transition-colors">{d.label}</span>
+                 <span className="text-zinc-600 font-normal">{d.value}%</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
