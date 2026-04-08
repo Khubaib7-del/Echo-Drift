@@ -192,6 +192,9 @@ export class GameApp {
     this.echo.x = this.player.x;
     this.echo.y = this.player.y;
     this.isGameOver = false;
+    
+    // Reset Camera
+    this.app.stage.x = 0;
 
     // Reset fragile platforms
     this.platforms.forEach(p => {
@@ -251,6 +254,10 @@ export class GameApp {
     this.player.y += this.velocity.y * dt;
     this.isGrounded = false;
     this.resolveCollisions(false);
+
+    // Camera Follow (Horizontal)
+    const targetX = (window.innerWidth / 2) - this.player.x;
+    this.app.stage.x += (targetX - this.app.stage.x) * 0.1;
 
     // Game Logic Checks
     this.updateEchoLogic();
@@ -411,6 +418,7 @@ export class GameApp {
         if (this.onWinCallback) {
             this.onWinCallback(this.currentLevelIndex);
             this.onWinCallback = undefined; // Prevent infinite re-triggers
+            this.isGameOver = true; // PAUSE THE GAME so player doesn't fall off in the background!
         }
      }
   }

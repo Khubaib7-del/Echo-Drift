@@ -23,7 +23,7 @@ const SECTOR_DATA = [
 ];
 
 const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, onSelectLevel, onBack, onToggleSettings }) => {
-  const [viewMode, setViewMode] = useState<'SECTORS' | 'LEVELS'>('SECTORS');
+  const [viewMode, setViewMode] = useState<'SECTORS' | 'LEVELS'>('LEVELS');
   const [selectedSectorId, setSelectedSectorId] = useState<number>(() => {
      // Default to the sector of their highest unlocked level
      const sec = Math.ceil(highestUnlockedLevel / 5);

@@ -5,7 +5,7 @@ interface ChartScreenProps {
 }
 
 const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
-  // We have 11 total sectors (1-10 + Beta). Let's pick 7 milestone points
+  // We have 11 total sectors (1-10 + Beta). Let's pick 6 core metrics
   const calculateSectorProgress = (sectorId: number) => {
     const startLevel = (sectorId - 1) * 5;
     const completedLevels = Math.max(0, Math.min(5, highestUnlockedLevel - startLevel - 1));
@@ -13,82 +13,114 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
   };
 
   const chartData = [
-    { label: 'ALPHA', value: calculateSectorProgress(1) },
-    { label: 'S_02', value: calculateSectorProgress(2) },
-    { label: 'S_04', value: calculateSectorProgress(4) },
-    { label: 'S_06', value: calculateSectorProgress(6) },
-    { label: 'S_08', value: calculateSectorProgress(8) },
-    { label: 'S_10', value: calculateSectorProgress(10) },
-    { label: 'BETA', value: calculateSectorProgress(11) }
+    { label: 'S_ALPHA', value: calculateSectorProgress(1) },
+    { label: 'S_BRIDGE', value: calculateSectorProgress(2) },
+    { label: 'S_VOID', value: calculateSectorProgress(6) },
+    { label: 'S_KINETIC', value: calculateSectorProgress(8) },
+    { label: 'S_APEX', value: calculateSectorProgress(10) },
+    { label: 'S_BETA', value: calculateSectorProgress(11) }
   ];
 
-  // Map values to 0-100 coordinates for SVG viewBox
-  const points = chartData.map((d, i) => {
-    const x = (i / (chartData.length - 1)) * 100;
-    const y = 100 - d.value; 
+  const sides = chartData.length;
+  // Radar radius
+  const R = 40;
+  const center = 50;
+
+  // Generate SVG path for the radar area
+  const radarPoints = chartData.map((d, i) => {
+    const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+    const r = (d.value / 100) * R;
+    const x = center + Math.cos(angle) * r;
+    const y = center + Math.sin(angle) * r;
     return `${x},${y}`;
   }).join(' ');
 
-  const areaPath = `0,100 ${points} 100,100`;
+  // Generate grid rings
+  const ringPercentages = [25, 50, 75, 100];
+  const rings = ringPercentages.map(pct => {
+    return Array.from({ length: sides }).map((_, i) => {
+        const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+        const r = (pct / 100) * R;
+        const x = center + Math.cos(angle) * r;
+        const y = center + Math.sin(angle) * r;
+        return `${x},${y}`;
+    }).join(' ');
+  });
 
   return (
     <div className="w-full h-full flex flex-col p-12 overflow-y-auto animated-scrollbar">
-      <div className="flex items-center gap-4 mb-12">
-        <span className="material-symbols-outlined text-6xl text-theme-primary">bar_chart</span>
+      <div className="flex items-center gap-4 mb-8">
+        <span className="material-symbols-outlined text-6xl text-theme-primary">radar</span>
         <div>
-          <h1 className="text-4xl font-headline font-black text-white uppercase tracking-widest">Performance Charts</h1>
-          <p className="text-theme-primary/60 font-body">Telemetry and drift stabilization metrics</p>
+          <h1 className="text-4xl font-headline font-black text-white uppercase tracking-widest">Temporal Diagnostics</h1>
+          <p className="text-theme-primary/60 font-body">Node synchronization radar telemetry</p>
         </div>
       </div>
 
-      <div className="w-full max-w-5xl glass-panel border border-theme-primary/20 p-8 flex flex-col items-center relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-theme-primary/5 blur-3xl pointer-events-none"></div>
+      <div className="w-full flex-1 glass-panel border border-theme-primary/20 p-8 flex lg:flex-row flex-col gap-12 items-center justify-center relative min-h-[500px]">
+        {/* Radar SVG Container */}
+        <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center z-10">
+            {/* Spinning background elements */}
+            <div className="absolute inset-0 border border-theme-primary/10 rounded-full animate-[spin_60s_linear_infinite]"></div>
+            <div className="absolute inset-[10%] border-t border-r border-theme-secondary/20 rounded-full animate-[spin_40s_linear_reverse_infinite]"></div>
+            
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-[0_0_15px_rgba(var(--theme-primary),0.5)]">
+               
+               {/* Background web/grid */}
+               {rings.map((pts, idx) => (
+                  <polygon key={idx} points={pts} className="fill-none stroke-zinc-800 stroke-[0.3]" strokeDasharray={idx === 3 ? "" : "1,1"} />
+               ))}
 
-        <h2 className="w-full text-left text-theme-primary font-headline uppercase tracking-widest text-sm mb-12 border-b border-theme-primary/20 pb-2 flex justify-between">
-            <span>Sector Sync Analysis</span>
-            <span className="text-zinc-500 font-mono tracking-tighter">DATA: LIVE</span>
-        </h2>
-        
-        <div className="w-full h-80 relative font-mono text-[10px] uppercase">
-          {/* Y-Axis Labels & Grid Lines */}
-          {[0, 25, 50, 75, 100].map(val => (
-            <div key={val} className="absolute w-full border-t border-zinc-800/80 flex justify-between z-0" style={{ bottom: `${val}%` }}>
-              <span className="text-zinc-500 -translate-y-1/2 -translate-x-12 absolute left-0 text-right w-8">{val}%</span>
-            </div>
-          ))}
+               {/* Axis Lines */}
+               {Array.from({ length: sides }).map((_, i) => {
+                  const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+                  const x = center + Math.cos(angle) * R;
+                  const y = center + Math.sin(angle) * R;
+                  return <line key={`line-${i}`} x1={center} y1={center} x2={x} y2={y} className="stroke-zinc-700 stroke-[0.2]" />
+               })}
 
-          {/* Core SVG Chart */}
-          <div className="absolute inset-0 z-10">
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
-                {/* Area under line */}
-                <polygon points={areaPath} className="fill-theme-primary/20" />
-                {/* Main line */}
-                <polyline points={points} className="fill-none stroke-theme-primary stroke-[0.5] drop-shadow-[0_0_5px_rgba(var(--theme-primary),1)]" vectorEffect="non-scaling-stroke" />
-                
-                {/* Data Points */}
-                {chartData.map((d, i) => {
-                    const x = (i / (chartData.length - 1)) * 100;
-                    const y = 100 - d.value;
-                    return (
-                       <g key={i} className="group cursor-crosshair">
-                           <line x1={x} y1="100" x2={x} y2={y} className="stroke-theme-primary/30 stroke-[0.2] stroke-dasharray-[1,1]" vectorEffect="non-scaling-stroke"/>
-                           <circle cx={x} cy={y} r="1.5" className="fill-theme-secondary group-hover:fill-white group-hover:r-2 transition-all shadow-[0_0_10px_rgba(var(--theme-secondary),1)]" />
-                       </g>
-                    );
-                })}
+               {/* Data Area */}
+               <polygon points={radarPoints} className="fill-theme-primary/20 stroke-theme-primary stroke-[0.5] transition-all duration-1000" />
+
+               {/* Hover Points & Labels */}
+               {chartData.map((d, i) => {
+                  const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+                  const r = (d.value / 100) * R;
+                  const px = center + Math.cos(angle) * r;
+                  const py = center + Math.sin(angle) * r;
+
+                  const textR = R + 8;
+                  const tx = center + Math.cos(angle) * textR;
+                  const ty = center + Math.sin(angle) * textR;
+
+                  return (
+                      <g key={i} className="group">
+                         <circle cx={px} cy={py} r="1.5" className="fill-white drop-shadow-[0_0_5px_rgba(255,255,255,1)] transition-all" />
+                         <text x={tx} y={ty} dominantBaseline="middle" textAnchor="middle" className="text-[3px] font-mono fill-zinc-500 uppercase group-hover:fill-theme-primary transition-colors">{d.label}</text>
+                      </g>
+                  )
+               })}
             </svg>
-          </div>
+        </div>
 
-          {/* X-Axis Labels */}
-          <div className="absolute top-[100%] left-0 w-full flex justify-between pt-4 text-theme-primary/70 tracking-widest z-20 font-bold">
-            {chartData.map((d, i) => (
-              <div key={i} className="-translate-x-1/2 flex flex-col items-center gap-2 group cursor-default">
-                 <span className="w-1 h-3 bg-zinc-800 group-hover:bg-theme-secondary transition-colors"></span>
-                 <span className="group-hover:text-white transition-colors">{d.label}</span>
-                 <span className="text-zinc-600 font-normal">{d.value}%</span>
+        {/* Legend / Readout */}
+        <div className="flex flex-col gap-4 z-10 w-full max-w-[300px]">
+           <h3 className="font-headline text-theme-primary uppercase tracking-widest border-b border-theme-primary/30 pb-2 mb-2 flex justify-between">
+              <span>Sector Integrity</span>
+              <span className="material-symbols-outlined text-[16px] animate-pulse">sensors</span>
+           </h3>
+           
+           {chartData.map((d, i) => (
+              <div key={i} className="flex justify-between items-center group cursor-default">
+                 <span className="font-mono text-xs text-zinc-400 group-hover:text-white transition-colors">{d.label}</span>
+                 <div className="flex items-center gap-3">
+                    <span className="font-mono text-sm text-theme-primary font-bold">{d.value}%</span>
+                    <div className="w-16 h-1 bg-zinc-900 border border-zinc-800 relative overflow-hidden">
+                       <div className="absolute top-0 left-0 h-full bg-theme-primary group-hover:bg-white transition-all duration-1000" style={{ width: `${d.value}%` }}></div>
+                    </div>
+                 </div>
               </div>
-            ))}
-          </div>
+           ))}
         </div>
       </div>
     </div>
