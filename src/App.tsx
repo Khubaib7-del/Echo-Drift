@@ -118,6 +118,7 @@ function App() {
       {/* UI Layers */}
       {gameState === 'MENU' && (
         <MainMenu 
+           highestUnlockedLevel={highestUnlockedLevel}
            onStart={enterLevelSelect} 
            onToggleSettings={() => setGameState('SETTINGS')} 
            onHelp={() => setGameState('HELP')} 
@@ -150,7 +151,7 @@ function App() {
              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[200] pointer-events-auto flex flex-col items-center animate-pulse">
                 <div className="bg-theme-secondary/20 backdrop-blur-md border border-theme-secondary/50 px-6 py-4 rounded-ss-2xl rounded-ee-2xl shadow-[0_0_20px_rgba(255,0,255,0.3)]">
                    <p className="text-white text-sm font-headline mb-2 text-center">Are you stuck? Analyze temporal sync paths to identify platform phase alignment.</p>
-                   <div className="flex justify-center w-full">
+                   <div className="flex justify-center w-full mt-4">
                      <button onClick={() => setShowHint(false)} className="text-xs bg-theme-secondary text-zinc-950 px-4 py-1 font-bold">ACKNOWLEDGE</button>
                    </div>
                 </div>

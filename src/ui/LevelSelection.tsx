@@ -23,6 +23,7 @@ const SECTOR_DATA = [
 ];
 
 const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, onSelectLevel, onBack, onToggleSettings }) => {
+  const [viewMode, setViewMode] = useState<'SECTORS' | 'LEVELS'>('SECTORS');
   const [selectedSectorId, setSelectedSectorId] = useState<number>(() => {
      // Default to the sector of their highest unlocked level
      const sec = Math.ceil(highestUnlockedLevel / 5);
@@ -78,25 +79,31 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
       <div className="w-full max-w-7xl mt-20 mb-6 flex justify-between items-end relative z-10 px-4 shrink-0">
         <div>
           <h2 className="text-4xl md:text-6xl font-black font-headline tracking-tighter uppercase text-white leading-none">
-            TEMPORAL <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-primary to-theme-secondary">SECTORS</span>
+            {viewMode === 'SECTORS' ? (
+               <>TEMPORAL <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-primary to-theme-secondary">SECTORS</span></>
+            ) : (
+               <>ARCHIVE <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-primary to-theme-secondary">NODES</span></>
+            )}
           </h2>
           <div className="flex items-center gap-4 mt-2">
             <span className="w-8 h-[1px] bg-theme-primary"></span>
-            <span className="text-xs font-headline uppercase tracking-widest text-theme-primary/60">Select macro-region for timeline synchronization</span>
+            <span className="text-xs font-headline uppercase tracking-widest text-theme-primary/60">
+              {viewMode === 'SECTORS' ? 'Select macro-region for timeline synchronization' : `Inspecting sector bounds: ${selectedSector.name}`}
+            </span>
           </div>
         </div>
         <button 
-          onClick={onBack}
+          onClick={viewMode === 'SECTORS' ? onBack : () => setViewMode('SECTORS')}
           className="text-sm font-headline uppercase text-zinc-500 hover:text-theme-primary transition-colors flex items-center gap-2 border border-white/5 bg-black/20 px-4 py-2"
         >
           <span className="material-symbols-outlined text-lg">arrow_back</span>
-          ABORT
+          {viewMode === 'SECTORS' ? 'ABORT' : 'BACK'}
         </button>
       </div>
 
-      <div className="w-full max-w-7xl flex-1 relative z-10 px-4 pb-12 flex flex-col lg:flex-row gap-6 overflow-hidden">
+      <div className="w-full max-w-7xl flex-1 relative z-10 px-4 pb-12 flex flex-col gap-6 overflow-hidden">
         
-        {/* Main Sectors List (With Scrollbar) */}
+        {viewMode === 'SECTORS' && (
         <div className="flex-1 overflow-y-auto animated-scrollbar pr-4 pb-8 h-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {SECTOR_DATA.map((sector) => {
@@ -108,19 +115,15 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
                   <button
                       key={sector.id}
                       onClick={() => {
-                        if (isSelected && status !== 'LOCKED') {
-                          // Quick launch highest unlocked level in this sector
-                          const firstLevel = (sector.id - 1) * 5 + 1;
-                          const highestInSector = Math.max(firstLevel, Math.min(firstLevel + 4, highestUnlockedLevel));
-                          onSelectLevel(highestInSector);
-                        } else {
+                        if (status !== 'LOCKED') {
                           setSelectedSectorId(sector.id);
+                          setViewMode('LEVELS');
                         }
                       }}
                       className={`
                       relative flex flex-col items-start p-5 transition-all duration-300 group/card text-left border
-                      ${status !== 'LOCKED' ? `cursor-pointer hover:-translate-y-1 hover:shadow-[0_5px_20px_rgba(var(--theme-primary),0.1)] ${isSelected ? 'animate-pulse-soft' : ''}` : 'opacity-50 cursor-not-allowed grayscale bg-black/40'}
-                      ${isSelected ? 'border-theme-primary bg-theme-primary/10' : 'border-white/10 bg-surface-container-high/80 hover:border-theme-primary/50'}
+                      ${status !== 'LOCKED' ? `cursor-pointer hover:-translate-y-1 hover:shadow-[0_5px_20px_rgba(var(--theme-primary),0.1)]` : 'opacity-50 cursor-not-allowed grayscale bg-black/40'}
+                      ${isSelected ? 'border-theme-primary border-white/10 bg-surface-container-high/80' : 'border-white/10 bg-surface-container-high/80 hover:border-theme-primary/50'}
                       backdrop-blur clip-slant-rev
                       `}
                   >
@@ -141,12 +144,9 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
                       </div>
                       
                       <div className="w-full flex justify-between items-center mb-1">
-                        <h3 className={`text-sm md:text-base font-black font-headline uppercase transition-colors ${isSelected ? 'text-theme-primary' : 'text-white'}`}>
+                        <h3 className={`text-sm md:text-base font-black font-headline uppercase transition-colors text-white group-hover/card:text-theme-primary`}>
                           {sector.name}
                         </h3>
-                        {isSelected && status !== 'LOCKED' && (
-                          <span className="text-[9px] font-headline bg-theme-primary text-black px-1.5 py-0.5 uppercase tracking-widest opacity-80 shadow-[0_0_8px_rgba(var(--theme-primary),0.5)]">LAUNCH</span>
-                        )}
                       </div>
                       
                       {status !== 'LOCKED' ? (
@@ -169,9 +169,11 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
               })}
           </div>
         </div>
+        )}
 
-        {/* Side Panel Guide - Fully Populated */}
-        <aside className="w-full lg:w-96 shrink-0 h-full flex flex-col order-first lg:order-none lg:h-auto max-h-[40vh] lg:max-h-none overflow-y-auto animated-scrollbar">
+        {/* Level Details View */}
+        {viewMode === 'LEVELS' && (
+        <aside className="w-full h-full flex flex-col lg:h-auto overflow-y-auto animated-scrollbar">
            <div className="w-full glass-panel border border-theme-primary/30 p-6 flex-1 flex flex-col items-start bg-black/60 backdrop-blur-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-theme-primary/5 blur-3xl rounded-full pointer-events-none"></div>
 
@@ -247,6 +249,7 @@ const LevelSelection: React.FC<LevelSelectionProps> = ({ highestUnlockedLevel, o
 
            </div>
         </aside>
+        )}
       </div>
     </div>
   );

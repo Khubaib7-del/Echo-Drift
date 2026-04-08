@@ -47,9 +47,9 @@ const generateLevels = (): LevelData[] => {
     goal: { x: 900, y: 300, w: 80, h: 80 },
     platforms: [
       { x: 50, y: 400, w: 1000, h: 50 },
-      { x: 400, y: 250, w: 150, h: 20 },
+      { x: 400, y: 320, w: 200, h: 20 },
     ],
-    buttons: [{ x: 450, y: 230, w: 50, h: 20, targetDoorIndex: 0 }],
+    buttons: [{ x: 475, y: 300, w: 50, h: 20, targetDoorIndex: 0 }],
     doors: [{ x: 800, y: 200, w: 20, h: 200 }],
     hazards: [{ x: 0, y: 600, w: 2000, h: 100 }],
     enemies: []
@@ -58,13 +58,15 @@ const generateLevels = (): LevelData[] => {
   // Level 3: The Fracture
   levels.push({
     spawn: { x: 100, y: 300 },
-    goal: { x: 900, y: 150, w: 80, h: 80 },
+    goal: { x: 900, y: 320, w: 80, h: 80 },
     platforms: [
       { x: 50, y: 400, w: 250, h: 50 },
-      { x: 850, y: 250, w: 200, h: 50 },
+      { x: 400, y: 350, w: 100, h: 20 },
+      { x: 600, y: 350, w: 100, h: 20 },
+      { x: 850, y: 400, w: 200, h: 50 },
     ],
-    buttons: [{ x: 200, y: 380, w: 50, h: 20, targetDoorIndex: 0 }],
-    doors: [{ x: 500, y: 100, w: 20, h: 400 }],
+    buttons: [{ x: 625, y: 330, w: 50, h: 20, targetDoorIndex: 0 }],
+    doors: [{ x: 800, y: 0, w: 20, h: 400 }],
     hazards: [{ x: 0, y: 600, w: 2000, h: 100 }],
     enemies: []
   });
@@ -88,11 +90,11 @@ const generateLevels = (): LevelData[] => {
     const numChunks = Math.floor(2 + (difficulty * 4));
     
     for (let c = 0; c < numChunks; c++) {
-      const gap = 50 + (Math.random() * 150 * difficulty);
+      const gap = 30 + (Math.random() * 60 * difficulty); // Safely jumpable gap (max 90, physics jump is 120 width max)
       currentX += gap;
       
       const pWidth = 100 + (Math.random() * 200);
-      const pY = 250 + (Math.random() * 200);
+      const pY = 320 + (Math.random() * 80); // Height variation at most 80 up (max jump height is 144)
       
       platforms.push({ x: currentX, y: pY, w: pWidth, h: 50 });
       
