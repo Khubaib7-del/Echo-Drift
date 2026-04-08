@@ -37,13 +37,13 @@ const TimelineScreen: React.FC<TimelineScreenProps> = ({ highestUnlockedLevel })
         <div className="absolute left-[50%] top-[30%] w-[3px] h-[30px] bg-white block animate-[pulse_2s_ease-in-out_infinite] blur-[2px] -translate-x-1/2"></div>
         <div className="absolute left-[50%] top-[70%] w-[2px] h-[15px] bg-theme-primary block animate-[pulse_1s_ease-in-out_infinite] -translate-x-1/2"></div>
 
-        <div className="relative space-y-0 flex flex-col pb-12 w-full">
+        <div className="relative space-y-0 flex flex-col pb-12 w-full mt-4">
           {baseEvents.map((evt, idx) => {
              const isLeft = idx % 2 === 0;
              const isTerminal = idx === baseEvents.length - 1;
 
              return (
-              <div key={idx} className={`relative flex items-center justify-center w-full group py-6 ${isLeft ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div key={idx} className="relative flex items-center w-full group py-6">
                 
                 {/* Center Node */}
                 <div className="absolute left-[50%] top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
@@ -55,20 +55,38 @@ const TimelineScreen: React.FC<TimelineScreenProps> = ({ highestUnlockedLevel })
                 {/* Connecting branch line */}
                 <div className={`absolute top-1/2 -translate-y-1/2 h-[1px] bg-theme-primary/30 z-10 transition-all duration-500 group-hover:bg-theme-primary block ${isLeft ? 'right-[50%] w-12' : 'left-[50%] w-12'}`}></div>
 
-                {/* Content Box */}
-                <div className={`w-1/2 relative px-8 ${isLeft ? 'text-right' : 'text-left'}`}>
-                  <div className={`glass-panel p-6 border transition-all duration-500 inline-block w-full 
-                    ${isTerminal ? 'border-theme-primary bg-theme-primary/5' : 'border-white/5 hover:border-theme-primary/40 bg-white/5 hover:bg-black'}
-                    ${isLeft ? 'group-hover:-translate-x-2' : 'group-hover:translate-x-2'}
-                  `}>
-                    <div className={`flex flex-col ${isLeft ? 'items-end' : 'items-start'} mb-3`}>
-                       <span className="text-theme-primary font-mono text-sm tracking-[0.2em]">{evt.year}</span>
-                       <h3 className="text-xl font-black text-white uppercase tracking-wider">{evt.title}</h3>
-                    </div>
-                    
-                    <p className={`text-zinc-400 font-body text-sm leading-relaxed ${isLeft ? 'text-right' : ''}`}>{evt.desc}</p>
-                  </div>
+                {/* Left Side Container */}
+                <div className={`w-1/2 relative px-8 flex ${isLeft ? 'justify-end' : 'justify-start invisible'}`}>
+                  {isLeft && (
+                      <div className={`glass-panel p-6 border transition-all duration-500 inline-block w-full max-w-[400px]
+                        ${isTerminal ? 'border-theme-primary bg-theme-primary/5' : 'border-white/5 hover:border-theme-primary/40 bg-white/5 hover:bg-black'}
+                        group-hover:-translate-x-2 text-right
+                      `}>
+                        <div className="flex flex-col items-end mb-3">
+                           <span className="text-theme-primary font-mono text-sm tracking-[0.2em]">{evt.year}</span>
+                           <h3 className="text-xl font-black text-white uppercase tracking-wider">{evt.title}</h3>
+                        </div>
+                        <p className="text-zinc-400 font-body text-sm leading-relaxed text-right">{evt.desc}</p>
+                      </div>
+                  )}
                 </div>
+
+                {/* Right Side Container */}
+                <div className={`w-1/2 relative px-8 flex ${!isLeft ? 'justify-start' : 'justify-end invisible'}`}>
+                  {!isLeft && (
+                      <div className={`glass-panel p-6 border transition-all duration-500 inline-block w-full max-w-[400px]
+                        ${isTerminal ? 'border-theme-primary bg-theme-primary/5' : 'border-white/5 hover:border-theme-primary/40 bg-white/5 hover:bg-black'}
+                        group-hover:translate-x-2 text-left
+                      `}>
+                        <div className="flex flex-col items-start mb-3">
+                           <span className="text-theme-primary font-mono text-sm tracking-[0.2em]">{evt.year}</span>
+                           <h3 className="text-xl font-black text-white uppercase tracking-wider">{evt.title}</h3>
+                        </div>
+                        <p className="text-zinc-400 font-body text-sm leading-relaxed text-left">{evt.desc}</p>
+                      </div>
+                  )}
+                </div>
+
               </div>
           )})}
         </div>

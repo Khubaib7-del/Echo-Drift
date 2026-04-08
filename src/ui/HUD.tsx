@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 
-const HUD: React.FC = () => {
+interface HUDProps {
+   activeLevel: number;
+}
+
+const HUD: React.FC<HUDProps> = ({ activeLevel }) => {
     const [timer, setTimer] = useState(0);
 
     useEffect(() => {
         const i = setInterval(() => setTimer(t => t+1), 1000);
         return () => clearInterval(i);
-    }, []);
+    }, [activeLevel]); // Reset timer when level changes
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
         return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     };
+
+    const sectorId = Math.floor((activeLevel - 1) / 5) + 1;
+    const levelInSector = ((activeLevel - 1) % 5) + 1;
 
     return (
         <div className="absolute inset-0 pointer-events-none z-10 w-full h-full font-body text-white selection:bg-cyan-400 selection:text-zinc-950 overflow-hidden">
@@ -55,8 +62,7 @@ const HUD: React.FC = () => {
                     <h1 className="text-2xl font-black italic text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] font-headline uppercase tracking-[0.1em]">ECHO DRIFT</h1>
                     <div className="h-[1px] w-24 bg-gradient-to-r from-cyan-400 to-transparent"></div>
                     <div className="flex gap-4">
-                        <span className="text-cyan-300 border-b-2 border-cyan-400 pb-1 font-headline uppercase tracking-[0.1em] font-bold text-sm">MISSION</span>
-                        <span className="text-cyan-900/60 font-headline uppercase tracking-[0.1em] font-bold text-sm">TIMELINE</span>
+                        <span className="text-cyan-300 border-b-2 border-cyan-400 pb-1 font-headline uppercase tracking-[0.1em] font-bold text-sm">SECTOR {sectorId} - LEVEL {levelInSector}</span>
                     </div>
                 </div>
             </header>

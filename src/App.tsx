@@ -139,7 +139,7 @@ function App() {
       )}
       {gameState === 'PLAYING' && (
          <>
-           <HUD />
+           <HUD activeLevel={activeLevel} />
            <div className="absolute top-4 right-4 z-50 pointer-events-auto">
              <Tooltip content="Abort current drift sequence" position="left">
                <button 

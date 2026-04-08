@@ -64,7 +64,7 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
           
           {/* Main Radar Card */}
           <div className="glass-panel border-theme-primary/20 p-6 flex flex-col items-center justify-center relative min-h-[400px] lg:col-span-2 shadow-[inset_0_0_50px_rgba(var(--theme-primary),0.05)]">
-             <div className="absolute top-4 left-4 text-theme-primary font-mono text-xs tracking-widest">01 // MACRO-SYNCHRONIZATION RADAR</div>
+             <div className="absolute top-4 left-4 text-theme-primary font-mono text-xs tracking-widest">01 // OVERALL SECTOR MASTERY</div>
              <div className="w-full h-full flex items-center justify-center pt-8">
                  <div className="w-[300px] aspect-square relative -translate-x-12">
                     <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-[0_0_15px_rgba(var(--theme-primary),0.5)]">
@@ -96,6 +96,7 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
                  </div>
                  
                  <div className="flex flex-col gap-3 w-[250px] border-l border-theme-primary/20 pl-6">
+                   <p className="text-[10px] text-zinc-500 mb-2 uppercase">Completion % per World</p>
                    {chartData.map((d, i) => (
                       <div key={i} className="w-full group">
                          <div className="flex justify-between font-mono text-[10px] text-zinc-400 mb-1">
@@ -113,25 +114,33 @@ const ChartScreen: React.FC<ChartScreenProps> = ({ highestUnlockedLevel }) => {
 
           {/* Secondary Live Area Graph */}
           <div className="glass-panel border-white/5 p-6 relative h-[250px] group">
-              <div className="absolute top-4 left-4 text-theme-secondary font-mono text-[10px] tracking-widest">02 // ECHO DIVERGENCE (LIVE)</div>
+              <div className="absolute top-4 left-4 text-theme-secondary font-mono text-[10px] tracking-widest">02 // ECHO CLONE ACTIVITY (LIVE)</div>
               <div className="absolute inset-0 pt-16 px-4 pb-4 w-full h-[250px]">
                   <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
                      <polygon points={`0,100 ${areaPointsStr} 100,100`} className="fill-theme-secondary/10" />
                      <polyline points={areaPointsStr} className="fill-none stroke-theme-secondary stroke-[0.8] drop-shadow-[0_0_5px_rgba(var(--theme-secondary),0.8)]" vectorEffect="non-scaling-stroke" />
                   </svg>
               </div>
-              <div className="absolute bottom-4 right-4 text-xs font-mono text-zinc-600 animate-pulse">STREAMING_</div>
+              <div className="absolute bottom-4 right-4 text-xs font-mono text-zinc-600 animate-pulse">RECORDING_</div>
           </div>
 
           {/* Tertiary Stability Bar Graph */}
           <div className="glass-panel border-white/5 p-6 relative h-[250px]">
-              <div className="absolute top-4 left-4 text-white font-mono text-[10px] tracking-widest">03 // HARDWARE METRICS</div>
-              <div className="w-full h-full pt-12 flex items-end justify-between gap-2 px-2">
-                 {[70, 85, 45, 90, 60, 30, 80, 95].map((val, idx) => (
-                    <div key={idx} className="relative w-full bg-zinc-900/50 rounded-t-sm group" style={{ height: '100%' }}>
-                        <div className="absolute bottom-0 w-full bg-white transition-all group-hover:bg-theme-primary" style={{ height: `${val}%` }}>
-                           <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-mono text-theme-primary">{val}</div>
+              <div className="absolute top-4 left-4 text-white font-mono text-[10px] tracking-widest">03 // REFLEX & SURVIVAL SKILL</div>
+              <div className="w-full h-full pt-16 flex items-end justify-between gap-4 px-2">
+                 {[
+                   { label: "AGI", value: Math.min(100, 30 + highestUnlockedLevel * 5) },
+                   { label: "AWR", value: Math.min(100, 40 + highestUnlockedLevel * 4) },
+                   { label: "PRC", value: Math.min(100, 20 + highestUnlockedLevel * 6) },
+                   { label: "SRV", value: Math.min(100, 50 + highestUnlockedLevel * 3) },
+                   { label: "SPD", value: Math.min(100, 35 + highestUnlockedLevel * 4.5) },
+                   { label: "ADP", value: Math.min(100, 25 + highestUnlockedLevel * 5.5) }
+                 ].map((stat, idx) => (
+                    <div key={idx} className="relative w-full bg-zinc-900/50 rounded-t-sm group flex flex-col justify-end items-center" style={{ height: '100%' }}>
+                        <div className="w-full bg-white transition-all duration-1000 group-hover:bg-theme-primary relative" style={{ height: `${stat.value}%` }}>
+                           <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-mono text-theme-primary">{Math.floor(stat.value)}</div>
                         </div>
+                        <span className="absolute -bottom-5 text-[8px] font-mono text-zinc-500 uppercase tracking-widest">{stat.label}</span>
                     </div>
                  ))}
               </div>

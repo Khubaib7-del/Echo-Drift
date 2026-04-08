@@ -415,10 +415,9 @@ export class GameApp {
      }
 
      if (this.checkOverlap(pRect, this.levelData.goal)) {
-        if (this.onWinCallback) {
-            this.onWinCallback(this.currentLevelIndex);
-            this.onWinCallback = undefined; // Prevent infinite re-triggers
+        if (this.onWinCallback && !this.isGameOver) {
             this.isGameOver = true; // PAUSE THE GAME so player doesn't fall off in the background!
+            this.onWinCallback(this.currentLevelIndex);
         }
      }
   }
