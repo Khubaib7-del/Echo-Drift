@@ -32,6 +32,7 @@ function App() {
   const gameRef = useRef<GameApp | null>(null);
   const [gameState, setGameState] = useState<GameState>('MENU');
   const [activeLevel, setActiveLevel] = useState<number>(1);
+  const [stability, setStability] = useState<number>(100);
   
   // Theme Config persistence
   const [themeConfig, setThemeConfig] = useState(() => {
@@ -60,6 +61,7 @@ function App() {
 
     // Initialize PixiJS
     const game = new GameApp();
+    game.onStabilityUpdate = (val) => setStability(val);
     game.init(canvasRef.current, (levelPassed: number) => {
       // Trigger win logic
       const nextLevel = levelPassed + 1;
@@ -139,7 +141,7 @@ function App() {
       )}
       {gameState === 'PLAYING' && (
          <>
-           <HUD activeLevel={activeLevel} />
+           <HUD activeLevel={activeLevel} stability={stability} />
            <div className="absolute top-4 right-4 z-50 pointer-events-auto">
              <Tooltip content="Abort current drift sequence" position="left">
                <button 

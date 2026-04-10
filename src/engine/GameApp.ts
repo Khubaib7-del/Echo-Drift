@@ -22,6 +22,9 @@ export class GameApp {
   private onFailCallback?: () => void;
   private isGrounded = false;
   private isGameOver = false;
+  public onStabilityUpdate?: (stability: number) => void;
+  private stabilityCounter = 0;
+  private lastStability = -1;
 
   // Level specific mechanics
   private levelData!: LevelData;
@@ -264,6 +267,20 @@ export class GameApp {
     this.updateEnemies(dt);
     this.updateCollectibles(dt);
     this.checkInteractions(dt);
+
+    // Dynamic Stability based on movement
+    this.stabilityCounter += dt;
+    if (this.stabilityCounter > 10) { // Throttle updates
+       this.stabilityCounter = 0;
+       const playerSpeed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+       // Speed ~0 -> 100%. Speed ~13 -> 25%
+       const stability = Math.max(20, Math.min(100, 100 - (playerSpeed / 13) * 80));
+       const rawVal = Math.floor(stability);
+       if (rawVal !== this.lastStability) {
+           this.lastStability = rawVal;
+           if (this.onStabilityUpdate) this.onStabilityUpdate(rawVal);
+       }
+    }
   }
 
   private getActiveColliders(): import('./levels').Rect[] {

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 
 interface HUDProps {
    activeLevel: number;
+   stability: number;
 }
 
-const HUD: React.FC<HUDProps> = ({ activeLevel }) => {
+const HUD: React.FC<HUDProps> = ({ activeLevel, stability }) => {
     const [timer, setTimer] = useState(0);
 
     useEffect(() => {
@@ -75,15 +76,21 @@ const HUD: React.FC<HUDProps> = ({ activeLevel }) => {
                             <span className="material-symbols-outlined text-zinc-950 font-variation-[FILL_1]">rocket_launch</span>
                         </div>
                         <div>
-                            <h2 className="text-cyan-400 font-bold font-headline tracking-tighter uppercase text-sm">SECTOR 7-G</h2>
-                            <p className="text-[10px] text-cyan-400/60 font-mono uppercase tracking-widest">PRESENT_TIMELINE_STABLE</p>
+                            <h2 className="text-cyan-400 font-bold font-headline tracking-tighter uppercase text-sm">SECTOR {sectorId}-{String.fromCharCode(64 + levelInSector)}</h2>
+                            <p className={`text-[10px] font-mono uppercase tracking-widest ${stability > 50 ? 'text-cyan-400/60' : 'text-magenta-400 animate-pulse'}`}>
+                                {stability === 100 ? 'TIMELINE_STABLE' : (stability > 50 ? 'TIMELINE_FLUCTUATING' : 'TIMELINE_FRACTURING!!')}
+                            </p>
                         </div>
                     </div>
                 </div>
                 
-                <div className="px-6 mt-auto">
-                    <div className="text-cyan-400 font-headline font-black text-xl tracking-tighter mb-1">T+ {formatTime(timer)}</div>
-                    <div className="text-[10px] text-cyan-400/50 uppercase tracking-widest">Synchronization Running</div>
+                <div className="px-6 mt-auto flex flex-col gap-1">
+                    <div className="text-cyan-400 font-headline font-black text-5xl tracking-tighter mb-1 drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]">T+ {formatTime(timer)}</div>
+                    <div className="flex flex-col font-mono text-[10px] text-cyan-400/60 leading-tight ml-1">
+                        <span>COORD: {Math.floor(Math.random()*100)}.0912 // -{Math.floor(Math.random()*200)}.2437</span>
+                        <span>VELOCITY: 88.2 KM/S</span>
+                    </div>
+                    <div className="text-[12px] text-cyan-400/80 uppercase tracking-widest ml-1 mt-1 font-bold">Synchronization Running</div>
                 </div>
             </aside>
 
@@ -94,10 +101,10 @@ const HUD: React.FC<HUDProps> = ({ activeLevel }) => {
                     <div className="relative w-32 h-32 flex items-center justify-center">
                         <svg className="w-full h-full transform -rotate-90">
                             <circle className="text-zinc-600/30" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeWidth="2"></circle>
-                            <circle className="text-cyan-400" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeDasharray="364.4" strokeDashoffset="91" strokeWidth="4"></circle>
+                            <circle className="text-cyan-400 transition-all duration-300" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeDasharray="364.4" strokeDashoffset={364.4 * (1 - stability / 100)} strokeWidth="4"></circle>
                         </svg>
                         <div className="absolute flex flex-col items-center">
-                            <span className="text-3xl font-black font-headline text-cyan-400">75%</span>
+                            <span className="text-3xl font-black font-headline text-cyan-400">{stability}%</span>
                             <span className="text-[10px] font-label text-zinc-400 uppercase tracking-widest">STABILITY</span>
                         </div>
                     </div>
@@ -126,14 +133,6 @@ const HUD: React.FC<HUDProps> = ({ activeLevel }) => {
                 </div>
             </section>
 
-            {/* Aesthetic decorative corner readouts */}
-            <div className="absolute bottom-12 left-8 z-30 pointer-events-none">
-                <div className="flex flex-col font-mono text-[8px] text-cyan-400/40 leading-tight">
-                    <span>COORD: {Math.floor(Math.random()*100)}.0912 // -{Math.floor(Math.random()*200)}.2437</span>
-                    <span>VELOCITY: 88.2 KM/S</span>
-                </div>
-            </div>
-            
             {/* NO BOTTOM NAVBAR HERE - IT HAS BEEN REMOVED TO PREVENT DISTRACTION DURING MISSION */}
         </div>
     );

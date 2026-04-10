@@ -85,8 +85,8 @@ const MainMenu: React.FC<MainMenuProps> = ({ highestUnlockedLevel, onStart, onTo
               />
             </div>
             <div>
-              <h2 className="text-cyan-400 font-bold font-headline text-sm tracking-tighter uppercase">SECTOR 7-G</h2>
-              <p className="text-[10px] text-cyan-400/50 uppercase tracking-widest block" title="PRESENT_TIMELINE">PRESENT_TIMELINE_STABLE</p>
+              <h2 className="text-cyan-400 font-bold font-headline text-sm tracking-tighter uppercase">SECTOR {Math.floor((highestUnlockedLevel - 1) / 5) + 1}-{String.fromCharCode(64 + ((highestUnlockedLevel - 1) % 5) + 1)}</h2>
+              <p className="text-[10px] text-cyan-400/50 uppercase tracking-widest block" title="TIMELINE_SYNCED">TIMELINE_SYNCED (v{highestUnlockedLevel}.0)</p>
             </div>
           </div>
           
