@@ -89,7 +89,7 @@ const HUD: React.FC<HUDProps> = ({ activeLevel, stability, velocity = 0 }) => {
                     <div className="text-cyan-400 font-headline font-black text-5xl tracking-tighter mb-1 drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]">T+ {formatTime(timer)}</div>
                     <div className="flex flex-col font-mono text-[10px] text-cyan-400/60 leading-tight ml-1">
                         <span>COORD: {Math.floor(Math.random() * 100)}.0912 // -{Math.floor(Math.random() * 200)}.2437</span>
-                        <span>VELOCITY: {(88.2 + (velocity * 2)).toFixed(1)} KM/S</span>
+                        <span>VELOCITY: {velocity.toFixed(1)} KM/S</span>
                     </div>
                     <div className="text-[12px] text-cyan-400/80 uppercase tracking-widest ml-1 mt-1 font-bold">Synchronization Running</div>
                 </div>
