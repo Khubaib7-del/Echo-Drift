@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
 interface HUDProps {
-   activeLevel: number;
-   stability: number;
+    activeLevel: number;
+    stability: number;
+    velocity?: number;
 }
 
-const HUD: React.FC<HUDProps> = ({ activeLevel, stability }) => {
+const HUD: React.FC<HUDProps> = ({ activeLevel, stability, velocity = 0 }) => {
     const [timer, setTimer] = useState(0);
 
     useEffect(() => {
-        const i = setInterval(() => setTimer(t => t+1), 1000);
+        const i = setInterval(() => setTimer(t => t + 1), 1000);
         return () => clearInterval(i);
     }, [activeLevel]); // Reset timer when level changes
 
@@ -24,35 +25,35 @@ const HUD: React.FC<HUDProps> = ({ activeLevel, stability }) => {
 
     return (
         <div className="absolute inset-0 pointer-events-none z-10 w-full h-full font-body text-white selection:bg-cyan-400 selection:text-zinc-950 overflow-hidden">
-            
+
             {/* Background Images Layer */}
             <div className="absolute inset-0 flex opacity-20 pointer-events-none z-[-1]">
                 <div className="w-1/2 h-full relative overflow-hidden border-r border-cyan-400/20">
-                    <img 
-                        className="w-full h-full object-cover mix-blend-screen" 
-                        alt="Present Timeline City" 
+                    <img
+                        className="w-full h-full object-cover mix-blend-screen"
+                        alt="Present Timeline City"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7RC5GH-f_wtfcDdTyf6qmA-7KTb5RPcmGnHtm1gIfYJC6LzUcE3bvzfPlbw6mEvIDX7jODW82wxPJNnO1EI2B9iMP63skC1TtM7xoBNGpGE_IBltl0Qj0Cwwyd9sIQtQ_SGmKPHTfQUbDJjdKrnBiVb74vBqfVCq4YX8T77AAfEwMAiBqoGH2VWd8271gs6wsj-ecrbSh2dbuBGRrI3943a90WEzF3tS7lN366Bf7rWWgIJC_ykuBrc33vMMK8SEIcRPWBmDfKnZs"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 to-transparent"></div>
                 </div>
                 <div className="w-1/2 h-full relative overflow-hidden">
-                    <img 
-                        className="w-full h-full object-cover grayscale opacity-60 mix-blend-color-dodge" 
-                        alt="Echo Timeline Industrial" 
+                    <img
+                        className="w-full h-full object-cover grayscale opacity-60 mix-blend-color-dodge"
+                        alt="Echo Timeline Industrial"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIOzqjWvz2W505Kc72zEQTH75dqpYncFkH-w1VYmT0siA_d1Ktr5kagRX9jVvsujkoCs68R5LYo9LaA-qkZr4UQdovmbyn9cvYNYkcYO9CBZfEvp6YldOGXZ4SS2LqKyHv2K0Xj_O3qxA4yYI99VZreVkrYQbDPXPy3yt71dTFK0Me6hQFXVz-4T5Jn7AN34J9ZYzTh9EGm0jlXbMCdjoP6bQ63Uv89UFjrg67vZXr92IG6OZVPzdSFhQR2IjHHxJV9SjxgoplOs9G"
                     />
                     <div className="absolute inset-0 bg-gradient-to-l from-magenta-400/10 to-transparent"></div>
                 </div>
             </div>
 
-      {/* Scanline Overlay */}
-      <div className="scanline-overlay opacity-30"></div>
+            {/* Scanline Overlay */}
+            <div className="scanline-overlay opacity-30"></div>
 
             {/* Robot Image (Simulated in RIFT screen) */}
             <div className="absolute bottom-1/4 left-1/4 -translate-x-1/2 w-48 h-96 opacity-10 blur-[1px] pointer-events-none">
-                <img 
-                    className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]" 
-                    alt="Robot Silhouette" 
+                <img
+                    className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]"
+                    alt="Robot Silhouette"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7ofsQP27LBp5Bh9wm9fMnu648Nv40oAjv-gS-Jl5qMrrv896DUj8nThk31r9l1ImmSfAU-L8ncNF3ResCWUOlRV8lk6-72EgZPK38_ZmZDCpQtXKJmp4-vIWbijrB5VDre9btO9VwpDo79TtNQKHrQUd__yFphRB3yEhFaDxAd_zwUJotjHTZCE7yeaVWP-KStO4N9sEKwwyTJKwyH3yzGEvVJgYumEt898-KOahUtZSrlJFJqr4439bf_h1B2IlVMANen_Uz9fS7"
                 />
             </div>
@@ -83,12 +84,12 @@ const HUD: React.FC<HUDProps> = ({ activeLevel, stability }) => {
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="px-6 mt-auto flex flex-col gap-1">
                     <div className="text-cyan-400 font-headline font-black text-5xl tracking-tighter mb-1 drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]">T+ {formatTime(timer)}</div>
                     <div className="flex flex-col font-mono text-[10px] text-cyan-400/60 leading-tight ml-1">
-                        <span>COORD: {Math.floor(Math.random()*100)}.0912 // -{Math.floor(Math.random()*200)}.2437</span>
-                        <span>VELOCITY: 88.2 KM/S</span>
+                        <span>COORD: {Math.floor(Math.random() * 100)}.0912 // -{Math.floor(Math.random() * 200)}.2437</span>
+                        <span>VELOCITY: {(88.2 + (velocity * 2)).toFixed(1)} KM/S</span>
                     </div>
                     <div className="text-[12px] text-cyan-400/80 uppercase tracking-widest ml-1 mt-1 font-bold">Synchronization Running</div>
                 </div>
@@ -119,7 +120,7 @@ const HUD: React.FC<HUDProps> = ({ activeLevel, stability }) => {
                     <div className="h-3 w-full bg-surface-container-lowest relative overflow-hidden">
                         <div className="absolute inset-y-0 left-0 bg-magenta-400 shadow-[0_0_15px_rgba(255,0,255,0.4)] w-[88%]"></div>
                         <div className="absolute inset-y-0 left-0 w-full flex">
-                            {[0,1,2,3].map(i => <div key={i} className="flex-1 border-r border-background/50"></div>)}
+                            {[0, 1, 2, 3].map(i => <div key={i} className="flex-1 border-r border-background/50"></div>)}
                         </div>
                     </div>
                 </div>

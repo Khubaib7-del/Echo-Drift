@@ -13,7 +13,7 @@ type GameState = 'MENU' | 'LEVEL_SELECT' | 'PLAYING' | 'SUCCESS' | 'GAME_OVER' |
 
 function hexToRgbTuple(hex: string) {
   let c = hex.substring(1);
-  if(c.length === 3) c = c.split('').map(x => x + x).join('');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
   let r = parseInt(c.slice(0, 2), 16);
   let g = parseInt(c.slice(2, 4), 16);
   let b = parseInt(c.slice(4, 6), 16);
@@ -33,7 +33,8 @@ function App() {
   const [gameState, setGameState] = useState<GameState>('MENU');
   const [activeLevel, setActiveLevel] = useState<number>(1);
   const [stability, setStability] = useState<number>(100);
-  
+  const [velocity, setVelocity] = useState<number>(0);
+
   // Theme Config persistence
   const [themeConfig, setThemeConfig] = useState(() => {
     const saved = localStorage.getItem('echo_drift_theme');
@@ -62,13 +63,14 @@ function App() {
     // Initialize PixiJS
     const game = new GameApp();
     game.onStabilityUpdate = (val) => setStability(val);
+    game.onVelocityUpdate = (val) => setVelocity(val);
     game.init(canvasRef.current, (levelPassed: number) => {
       // Trigger win logic
       const nextLevel = levelPassed + 1;
       setHighestUnlockedLevel(prev => {
-          const highest = Math.max(prev, nextLevel);
-          localStorage.setItem('echo_drift_highest_level', highest.toString());
-          return highest;
+        const highest = Math.max(prev, nextLevel);
+        localStorage.setItem('echo_drift_highest_level', highest.toString());
+        return highest;
       });
       setGameState('SUCCESS');
     }, () => {
@@ -85,106 +87,106 @@ function App() {
   // Monitor idle state during PLAYING for hints
   useEffect(() => {
     if (gameState === 'PLAYING') {
-       const resetTimer = () => {
-          setShowHint(false);
-          if (playInteractionTimer.current) clearTimeout(playInteractionTimer.current);
-          playInteractionTimer.current = setTimeout(() => setShowHint(true), 15000); // 15s idle = hint
-       };
-       window.addEventListener('keydown', resetTimer);
-       window.addEventListener('pointerdown', resetTimer);
-       resetTimer();
-       return () => {
-          window.removeEventListener('keydown', resetTimer);
-          window.removeEventListener('pointerdown', resetTimer);
-          if (playInteractionTimer.current) clearTimeout(playInteractionTimer.current);
-       };
+      const resetTimer = () => {
+        setShowHint(false);
+        if (playInteractionTimer.current) clearTimeout(playInteractionTimer.current);
+        playInteractionTimer.current = setTimeout(() => setShowHint(true), 15000); // 15s idle = hint
+      };
+      window.addEventListener('keydown', resetTimer);
+      window.addEventListener('pointerdown', resetTimer);
+      resetTimer();
+      return () => {
+        window.removeEventListener('keydown', resetTimer);
+        window.removeEventListener('pointerdown', resetTimer);
+        if (playInteractionTimer.current) clearTimeout(playInteractionTimer.current);
+      };
     } else {
-       setShowHint(false);
+      setShowHint(false);
     }
   }, [gameState]);
 
   const enterLevelSelect = () => setGameState('LEVEL_SELECT');
   const returnToMenu = () => setGameState('MENU');
-  
+
   const startGame = (level: number) => {
     setActiveLevel(level);
     setGameState('PLAYING');
     if (gameRef.current) {
-        gameRef.current.loadLevel(level);
+      gameRef.current.loadLevel(level);
     }
   };
 
   return (
     <div className={`relative w-screen h-screen bg-theme-bg overflow-hidden transition-colors duration-300`} style={{ fontFamily: themeConfig.fontFamily }}>
       {/* The WebGL Canvas */}
-      <canvas 
-        ref={canvasRef} 
-        className={`absolute inset-0 w-full h-full z-0 block pointer-events-none transition-opacity duration-500 ${gameState === 'PLAYING' ? 'opacity-100' : 'opacity-0'}`} 
+      <canvas
+        ref={canvasRef}
+        className={`absolute inset-0 w-full h-full z-0 block pointer-events-none transition-opacity duration-500 ${gameState === 'PLAYING' ? 'opacity-100' : 'opacity-0'}`}
       />
 
       {/* UI Layers */}
       {gameState === 'MENU' && (
-        <MainMenu 
-           highestUnlockedLevel={highestUnlockedLevel}
-           onStart={enterLevelSelect} 
-           onToggleSettings={() => setGameState('SETTINGS')} 
-           onHelp={() => setGameState('HELP')} 
+        <MainMenu
+          highestUnlockedLevel={highestUnlockedLevel}
+          onStart={enterLevelSelect}
+          onToggleSettings={() => setGameState('SETTINGS')}
+          onHelp={() => setGameState('HELP')}
         />
       )}
       {gameState === 'LEVEL_SELECT' && (
-        <LevelSelection 
-           highestUnlockedLevel={highestUnlockedLevel}
-           onSelectLevel={startGame} 
-           onBack={returnToMenu} 
-           onToggleSettings={() => setGameState('SETTINGS')}
+        <LevelSelection
+          highestUnlockedLevel={highestUnlockedLevel}
+          onSelectLevel={startGame}
+          onBack={returnToMenu}
+          onToggleSettings={() => setGameState('SETTINGS')}
         />
       )}
       {gameState === 'PLAYING' && (
-         <>
-           <HUD activeLevel={activeLevel} stability={stability} />
-           <div className="absolute top-4 right-4 z-50 pointer-events-auto">
-             <Tooltip content="Abort current drift sequence" position="left">
-               <button 
-                 onClick={returnToMenu}
-                 className="p-2 bg-zinc-950/80 border border-theme-primary/30 text-theme-primary hover:bg-theme-primary hover:text-zinc-950 transition-all font-headline text-xs focus:ring focus:ring-theme-primary"
-               >
-                 ABORT DRIFT
-               </button>
-             </Tooltip>
-           </div>
-           
-           {/* In-Game Contextual Hint System */}
-           {showHint && (
-             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[200] pointer-events-auto flex flex-col items-center animate-pulse">
-                <div className="bg-theme-secondary/20 backdrop-blur-md border border-theme-secondary/50 px-6 py-4 rounded-ss-2xl rounded-ee-2xl shadow-[0_0_20px_rgba(255,0,255,0.3)]">
-                   <p className="text-white text-sm font-headline mb-2 text-center">Are you stuck? Analyze temporal sync paths to identify platform phase alignment.</p>
-                   <div className="flex justify-center w-full mt-4">
-                     <button onClick={() => setShowHint(false)} className="text-xs bg-theme-secondary text-zinc-950 px-4 py-1 font-bold">ACKNOWLEDGE</button>
-                   </div>
+        <>
+          <HUD activeLevel={activeLevel} stability={stability} velocity={velocity} />
+          <div className="absolute top-4 right-4 z-50 pointer-events-auto">
+            <Tooltip content="Abort current drift sequence" position="left">
+              <button
+                onClick={returnToMenu}
+                className="p-2 bg-zinc-950/80 border border-theme-primary/30 text-theme-primary hover:bg-theme-primary hover:text-zinc-950 transition-all font-headline text-xs focus:ring focus:ring-theme-primary"
+              >
+                ABORT DRIFT
+              </button>
+            </Tooltip>
+          </div>
+
+          {/* In-Game Contextual Hint System */}
+          {showHint && (
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[200] pointer-events-auto flex flex-col items-center animate-pulse">
+              <div className="bg-theme-secondary/20 backdrop-blur-md border border-theme-secondary/50 px-6 py-4 rounded-ss-2xl rounded-ee-2xl shadow-[0_0_20px_rgba(255,0,255,0.3)]">
+                <p className="text-white text-sm font-headline mb-2 text-center">Are you stuck? Analyze temporal sync paths to identify platform phase alignment.</p>
+                <div className="flex justify-center w-full mt-4">
+                  <button onClick={() => setShowHint(false)} className="text-xs bg-theme-secondary text-zinc-950 px-4 py-1 font-bold">ACKNOWLEDGE</button>
                 </div>
-             </div>
-           )}
-         </>
+              </div>
+            </div>
+          )}
+        </>
       )}
       {gameState === 'SUCCESS' && (
-        <MissionSuccess 
-           onNext={() => startGame(activeLevel + 1)} 
-           onMenu={returnToMenu} 
-           onToggleSettings={() => setGameState('SETTINGS')} 
+        <MissionSuccess
+          onNext={() => startGame(activeLevel + 1)}
+          onMenu={returnToMenu}
+          onToggleSettings={() => setGameState('SETTINGS')}
         />
       )}
       {gameState === 'GAME_OVER' && (
-        <MissionFailed 
-           onRestart={() => startGame(activeLevel)} 
-           onMenu={returnToMenu} 
-           onToggleSettings={() => setGameState('SETTINGS')} 
+        <MissionFailed
+          onRestart={() => startGame(activeLevel)}
+          onMenu={returnToMenu}
+          onToggleSettings={() => setGameState('SETTINGS')}
         />
       )}
       {gameState === 'HELP' && (
         <HelpScreen onBack={returnToMenu} />
       )}
       {gameState === 'SETTINGS' && (
-        <SettingsScreen 
+        <SettingsScreen
           onBack={returnToMenu}
           config={themeConfig}
           setConfig={setThemeConfig}

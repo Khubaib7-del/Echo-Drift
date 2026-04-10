@@ -25,6 +25,8 @@ export class GameApp {
    public onStabilityUpdate?: (stability: number) => void;
    private stabilityCounter = 0;
    private lastStability = -1;
+   public onVelocityUpdate?: (velocity: number) => void;
+   private lastVelocity = -1;
 
    // Level specific mechanics
    private levelData!: LevelData;
@@ -279,6 +281,11 @@ export class GameApp {
          if (rawVal !== this.lastStability) {
             this.lastStability = rawVal;
             if (this.onStabilityUpdate) this.onStabilityUpdate(rawVal);
+         }
+         const displayVel = parseFloat((playerSpeed * 6.8).toFixed(1)); // Make it peak around 88.4 KM/S when fast
+         if (displayVel !== this.lastVelocity) {
+            this.lastVelocity = displayVel;
+            if (this.onVelocityUpdate) this.onVelocityUpdate(displayVel);
          }
       }
    }
