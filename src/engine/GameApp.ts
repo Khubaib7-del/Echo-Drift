@@ -6,7 +6,7 @@ export class GameApp {
    public app: PIXI.Application;
    private player!: PIXI.Graphics;
    private echo!: PIXI.Graphics;
-   private timelineDelay: number = 60 * 5; // 5 seconds at 60fps
+   private timelineDelay: number = 60 * 3.5; // 3.5 seconds at 60fps
    private history: { x: number, y: number }[] = [];
 
    // Inputs
