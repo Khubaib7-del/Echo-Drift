@@ -27,25 +27,25 @@ Below is the conceptual architecture outlining how the UI, Game Engine, and supp
 
 ```mermaid
 graph TD
-    subgraph Client Application
-        UI[React UI Layer]:::react
-        Engine[PixiJS Game Engine]:::engine
-        State[Local App State]:::state
+    subgraph ClientApp ["Client Application"]
+        UI["React UI Layer"]:::react
+        Engine["PixiJS Game Engine"]:::engine
+        State["Local App State"]:::state
     end
 
-    subgraph Backend Services
-        API[Game Server / API Handler]:::backend
-        Auth[Authentication Service]:::backend
-        DB[(PostgreSQL / User Data)]:::database
+    subgraph Backend ["Backend Services"]
+        API["Game Server / API Handler"]:::backend
+        Auth["Authentication Service"]:::backend
+        DB[("PostgreSQL")]:::database
     end
 
-    UI <--> State
-    Engine <--> State
+    UI --- State
+    Engine --- State
     
-    UI -->|Fetch Leaderboards / Login| API
-    Engine -->|Telemetry & Level Progress| API
-    API <--> DB
-    API <--> Auth
+    UI -->|"Fetch Leaderboards"| API
+    Engine -->|"Telemetry"| API
+    API --- DB
+    API --- Auth
 
     classDef react fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
     classDef engine fill:#ff0055,stroke:#333,stroke-width:2px,color:#fff
