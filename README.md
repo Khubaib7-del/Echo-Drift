@@ -23,35 +23,25 @@ This project showcases a seamless integration between a high-performance WebGL g
 
 ## System Architecture
 
-Below is the conceptual architecture outlining how the UI, Game Engine, and supporting services communicate:
+Below is the conceptual architecture outlining how the React UI, PixiJS Game Engine, and underlying game state interact within the frontend client:
 
 ```mermaid
 graph TD
-    subgraph ClientApp ["Client Application"]
-        UI["React UI Layer"]:::react
-        Engine["PixiJS Game Engine"]:::engine
-        State["Local App State"]:::state
+    subgraph Client Application
+        UI["React UI Overlay"]:::react
+        Engine["PixiJS WebGL Engine"]:::engine
+        State["Application State (Zustand & Refs)"]:::state
+        Levels["Level Data (TS Modules)"]:::data
     end
 
-    subgraph Backend ["Backend Services"]
-        API["Game Server / API Handler"]:::backend
-        Auth["Authentication Service"]:::backend
-        DB[("PostgreSQL")]:::database
-    end
-
-    UI --- State
-    Engine --- State
-    
-    UI -->|"Fetch Leaderboards"| API
-    Engine -->|"Telemetry"| API
-    API --- DB
-    API --- Auth
+    UI <-->|"Reads/Writes"| State
+    Engine <-->|"Reads/Writes"| State
+    Engine ---|"Renders Physics & Collision"| Levels
 
     classDef react fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
     classDef engine fill:#ff0055,stroke:#333,stroke-width:2px,color:#fff
     classDef state fill:#f5f5f5,stroke:#333,stroke-width:2px,color:#000
-    classDef backend fill:#8fbc8f,stroke:#333,stroke-width:2px,color:#000
-    classDef database fill:#f4a460,stroke:#333,stroke-width:2px,color:#000
+    classDef data fill:#f4a460,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ## Getting Started
