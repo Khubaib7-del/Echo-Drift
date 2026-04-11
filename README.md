@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# Echo Drift
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Echo Drift is an immersive WebGL-based puzzle platformer game where players engage in time-bending mechanics. You must navigate through shattered temporal sectors, avoiding your past actions ("echoes") while leveraging agility and timing to resolve temporal paradoxes and restore stability to the timeline.
 
-Currently, two official plugins are available:
+## Project Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This project showcases a seamless integration between a high-performance WebGL game engine (PixiJS) and a modern, high-fidelity UI framework (React). It focuses on providing a responsive, 60fps gameplay experience overlayed with an aesthetic, temporal-themed dashboard.
 
-## React Compiler
+## Key Features & Functionality
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*   **Temporal Echo Mechanic:** Every movement is recorded. Your past "echo" follows you, acting as an unpredictable hazard. Colliding with your recent echo results in a destructive time paradox (game over).
+*   **Dynamic UI Overlay:** A sleek React-based HUD interfaces with the game engine, displaying real-time metrics such as player velocity, timeline stability, and game progress.
+*   **Interactive Environments:** Navigate through levels featuring crumbling platforms, laser doors, switches, and patrolling enemies, all handled with a custom AABB collision detection system.
+*   **Smooth Transitions:** Progressive level advancement with seamless transitions between the game canvas and React UI screens (Main Menu, Success/Failed states).
 
-## Expanding the ESLint configuration
+## Technical Specifications
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+*   **Frontend Framework:** React 18, utilizing functional components and hooks.
+*   **Language:** TypeScript (Strict Mode) across both the UI and Engine.
+*   **Game Engine:** PixiJS (v8) for 2D WebGL rendering, optimized for dynamic resizing with high DPI support.
+*   **Module Bundler:** Vite for fast HMR and optimized production builds.
+*   **Styling:** Custom CSS tailored to mimic a high-end design system, focusing on deep blacks, vibrant neon highlights, and glassmorphic card overlays.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## System Architecture
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Below is the conceptual architecture outlining how the UI, Game Engine, and supporting services communicate:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```mermaid
+graph TD
+    subgraph Client Application
+        UI[React UI Layer]:::react
+        Engine[PixiJS Game Engine]:::engine
+        State[Local App State]:::state
+    end
+
+    subgraph Backend Services
+        API[Game Server / API Handler]:::backend
+        Auth[Authentication Service]:::backend
+        DB[(PostgreSQL / User Data)]:::database
+    end
+
+    UI <--> State
+    Engine <--> State
+    
+    UI -->|Fetch Leaderboards / Login| API
+    Engine -->|Telemetry & Level Progress| API
+    API <--> DB
+    API <--> Auth
+
+    classDef react fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
+    classDef engine fill:#ff0055,stroke:#333,stroke-width:2px,color:#fff
+    classDef state fill:#f5f5f5,stroke:#333,stroke-width:2px,color:#000
+    classDef backend fill:#8fbc8f,stroke:#333,stroke-width:2px,color:#000
+    classDef database fill:#f4a460,stroke:#333,stroke-width:2px,color:#000
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Clone the repository** and navigate to learning directory.
+2.  **Install dependencies:** `npm install`
+3.  **Start Dev Server:** `npm run dev`
+4.  **Build for Production:** `npm run build`
