@@ -50,3 +50,7 @@ graph TD
 2.  **Install dependencies:** `npm install`
 3.  **Start Dev Server:** `npm run dev`
 4.  **Build for Production:** `npm run build`
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
