@@ -5,6 +5,7 @@ import HUD from './ui/HUD';
 import LevelSelection from './ui/LevelSelection';
 import MissionSuccess from './ui/MissionSuccess';
 import MissionFailed from './ui/MissionFailed';
+import PauseScreen from './ui/PauseScreen';
 import SettingsScreen from './ui/SettingsScreen';
 import HelpScreen from './ui/HelpScreen';
 import MemoriesLog from './ui/MemoriesLog';
@@ -41,17 +42,19 @@ function App() {
   const [gameState, setGameState] = useState<GameState>('MENU');
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [activeLevel, setActiveLevel] = useState<number>(1);
+  const [selectedLevel, setSelectedLevel] = useState<number>(1);
+  const [levelStartTime, setLevelStartTime] = useState<number>(0);
+  const [isGamePaused, setIsGamePaused] = useState<boolean>(true);
   const [stability, setStability] = useState(100);
   const [velocity, setVelocity] = useState(0);
   const [dashCooldown, setDashCooldown] = useState(0);
   const [echoDistance, setEchoDistance] = useState(1000);
   const [missionProgress, setMissionProgress] = useState(0);
-  const [missionStats, setMissionStats] = useState({ maxVelocity: 0, closeCalls: 0, dashCount: 0 });
+  const [missionStats, setMissionStats] = useState({ maxVelocity: 0, closeCalls: 0, dashCount: 0, time: 0 });
   const [bestTimes, setBestTimes] = useState<Record<number, number>>(() => {
     const saved = localStorage.getItem('echo-drift-best-times');
     return saved ? JSON.parse(saved) : {};
   });
-  const [levelStartTime, setLevelStartTime] = useState(0);
   const [showBootSequence, setShowBootSequence] = useState(false);
   const [bootSequenceText, setBootSequenceText] = useState("");
 
@@ -83,9 +86,10 @@ function App() {
     game.onProximityUpdate = (d) => setEchoDistance(d);
     game.onProgressUpdate = (p) => setMissionProgress(p);
     game.init(canvasRef.current, (levelPassed: number) => {
-      setMissionStats(game.getMissionStats());
       const endTime = Date.now();
       const timeTaken = (endTime - levelStartTime) / 1000;
+      setMissionStats({ ...game.getMissionStats(), time: timeTaken });
+      
       setBestTimes(prev => {
           const currentBest = prev[levelPassed] || Infinity;
           if (timeTaken < currentBest) {
@@ -112,11 +116,31 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (gameRef.current) {
+        if (isGamePaused) gameRef.current.stopGame();
+        else gameRef.current.resumeGame();
+    }
+  }, [isGamePaused]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && gameState === 'PLAYING') {
+        setIsGamePaused(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameState]);
+
   const startGame = (level: number) => {
     setActiveLevel(level);
-    setLevelStartTime(Date.now());
+    setIsGamePaused(true);
+    setSidebarOpen(false);
     setGameState('PLAYING');
     setShowBootSequence(true);
+    if (gameRef.current) gameRef.current.stopGame();
+
     const steps = ["INITIALIZING...", "CALIBRATING...", "DASH_PROTOCOL: READY", "GO."];
     let i = 0;
     const interval = setInterval(() => {
@@ -125,7 +149,12 @@ function App() {
             i++;
         } else {
             clearInterval(interval);
-            setTimeout(() => setShowBootSequence(false), 800);
+            setTimeout(() => {
+                setShowBootSequence(false);
+                setIsGamePaused(false);
+                setLevelStartTime(Date.now());
+                if (gameRef.current) gameRef.current.resumeGame();
+            }, 800);
         }
     }, 400);
     if (gameRef.current) gameRef.current.loadLevel(level);
@@ -157,7 +186,7 @@ function App() {
         <nav className="flex-1 py-8 flex flex-col gap-2 overflow-y-auto no-scrollbar pb-8">
           {[
             { id: 'MENU', icon: 'home', label: 'OPERATOR_HUB' },
-            { id: 'LEVEL_SELECT', icon: 'grid_view', label: 'SECTORS' },
+            { id: 'LEVEL_SELECT', icon: 'grid_view', label: 'LEVELS' },
             { id: 'TIMELINE', icon: 'timeline', label: 'TIMELINE' },
             { id: 'MEMORIES', icon: 'memory', label: 'MEMORIES' },
             { id: 'ANALYTICS', icon: 'bar_chart', label: 'GRAPH' },
@@ -216,15 +245,42 @@ function App() {
           )}
           {gameState === 'PLAYING' && (
             <>
-              <HUD activeLevel={activeLevel} stability={stability} velocity={velocity} dashCooldown={dashCooldown} echoDistance={echoDistance} missionProgress={missionProgress} />
-              <button onClick={returnToMenu} className="absolute top-6 right-6 p-4 bg-red-600/10 border border-red-500/30 text-red-500 font-headline text-xs uppercase pointer-events-auto hover:bg-red-500 hover:text-black transition-all">ABORT DRIFT</button>
+              <HUD 
+                activeLevel={activeLevel} 
+                isPaused={isGamePaused} 
+                onTogglePause={() => setIsGamePaused(!isGamePaused)}
+                stability={stability} 
+                velocity={velocity} 
+                dashCooldown={dashCooldown} 
+                echoDistance={echoDistance} 
+                missionProgress={missionProgress} 
+              />
+              
+              {isGamePaused && !showBootSequence && (
+                <PauseScreen 
+                    onResume={() => setIsGamePaused(false)}
+                    onRestart={() => startGame(activeLevel)}
+                    onMenu={returnToMenu}
+                />
+              )}
             </>
           )}
           {gameState === 'SUCCESS' && (
-            <MissionSuccess level={activeLevel} stats={missionStats} onNext={() => startGame(activeLevel + 1)} onMenu={returnToMenu} />
+            <MissionSuccess 
+              levelId={activeLevel} 
+              completionTime={missionStats.time || 0} 
+              stability={stability} 
+              onRetry={() => startGame(activeLevel)}
+              onNextLevel={() => startGame(activeLevel + 1)} 
+              onReturnToHub={returnToMenu} 
+            />
           )}
           {gameState === 'GAME_OVER' && (
-            <MissionFailed onRestart={() => startGame(activeLevel)} onMenu={returnToMenu} />
+            <MissionFailed 
+              onRestart={() => startGame(activeLevel)} 
+              onMenu={returnToMenu} 
+              onToggleSettings={() => setGameState('SETTINGS')}
+            />
           )}
           {gameState === 'HELP' && <HelpScreen onBack={returnToMenu} />}
           {gameState === 'TIMELINE' && <TimelineVisualization onNavigate={setGameState} />}

@@ -49,6 +49,7 @@ export class GameApp {
     private hasReachedCloseRange = false;
 
    private particles: { graphics: PIXI.Graphics, vx: number, vy: number, life: number }[] = [];
+   private safeInitTimer = 90; // 1.5s safety buffer
 
    private triggerShake(amount: number) {
        this.shakeTime = 15; // 0.25s
@@ -139,14 +140,17 @@ export class GameApp {
       this.isPaused = true;
    }
 
+   public resumeGame() {
+      this.isPaused = false;
+   }
+
    public loadLevel(levelIndex: number) {
-    this.isPaused = false;
     this.currentLevelIndex = levelIndex;
     this.levelData = LEVELS[levelIndex - 1] || LEVELS[0];
 
-    // Scale echo delay: starts at 3.5s (210 frames), drops to 1s (60 frames) at level 55
-    const delayFrames = Math.max(60, 210 - (levelIndex - 1) * 2.8);
-    this.timelineDelay = Math.floor(delayFrames);
+    // Scale echo delay: starts at 3.5s (210 frames), drops to 0.8s (48 frames) at level 30
+    const progress = Math.min(1, (levelIndex - 1) / 30);
+    this.timelineDelay = 210 - (progress * 162); 
 
     // Clear previous
     this.platforms.forEach(p => p.graphics?.destroy());
@@ -171,6 +175,10 @@ export class GameApp {
 
       this.setupLevel();
       this.setupEntities();
+
+      // Sync camera immediately so level is visible during boot
+      const targetX = (window.innerWidth / 2) - this.player.x;
+      this.app.stage.x = targetX;
    }
 
    private setupBackground() {
@@ -339,6 +347,7 @@ export class GameApp {
       this.echo.y = this.player.y;
       this.isGameOver = false;
       this.currentStability = 100;
+      this.safeInitTimer = 90;
 
       // Reset Camera
       this.app.stage.x = 0;
@@ -655,10 +664,11 @@ export class GameApp {
    }
 
    private checkInteractions(dt: number) {
+      if (this.safeInitTimer > 0) this.safeInitTimer -= dt;
       const pRect = { x: this.player.x, y: this.player.y, w: 40, h: 80 };
       const eRect = { x: this.echo.x, y: this.echo.y, w: 40, h: 80 };
 
-      if (this.history.length > this.timelineDelay - 10) {
+      if (this.history.length > this.timelineDelay - 10 && this.safeInitTimer <= 0) {
          const eRectCore = { x: this.echo.x + 10, y: this.echo.y + 10, w: 20, h: 60 };
          if (this.checkOverlap(pRect, eRectCore)) {
             this.triggerGameOver();

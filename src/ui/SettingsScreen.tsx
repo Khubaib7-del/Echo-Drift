@@ -15,11 +15,11 @@ interface SettingsScreenProps {
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, config, setConfig, resetToDefaults }) => {
   return (
-    <div className="fixed inset-0 z-[1000] bg-black/98 backdrop-blur-3xl overflow-y-auto animated-scrollbar pointer-events-auto flex flex-col p-8 md:p-24">
+    <div className="absolute inset-0 z-[1000] bg-black/98 backdrop-blur-3xl overflow-y-auto animated-scrollbar pointer-events-auto flex flex-col p-8 md:p-24">
       
-      {/* Background Detail */}
-      <div className="fixed inset-0 pointer-events-none opacity-5">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-white -skew-x-[15deg] translate-x-1/4"></div>
+      {/* Background Decor */}
+      <div className="absolute inset-0 pointer-events-none opacity-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,240,255,0.1)_0%,transparent_70%)]"></div>
       </div>
 
       <div className="w-full max-w-5xl mx-auto flex flex-col relative z-10 flex-1">
