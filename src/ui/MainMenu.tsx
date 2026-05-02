@@ -1,228 +1,125 @@
-import React, { useState } from 'react';
-import TimelineScreen from './Timeline';
-import ChartScreen from './Chart';
-import MemoriesScreen from './Memories';
-import { Tooltip } from './Tooltip';
-
-type Tab = 'MISSION' | 'TIMELINE' | 'CHART' | 'MEMORIES';
+import React from 'react';
 
 interface MainMenuProps {
-  highestUnlockedLevel: number;
-  onStart: () => void; // Navigates to Level Selection
-  onToggleSettings: () => void;
-  onHelp: () => void;
+    onStart: () => void;
+    bestTime: number | null;
+    onNavigate: (state: any) => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ highestUnlockedLevel, onStart, onToggleSettings, onHelp }) => {
-  const [activeTab, setActiveTab] = useState<Tab>('MISSION');
-
-  const getTabClass = (tab: Tab) => {
-    if (activeTab === tab) {
-      return "w-full flex items-center gap-4 py-3 px-4 bg-cyan-400 text-zinc-950 font-black clip-path-custom transition-all";
-    }
-    return "w-full flex items-center gap-4 py-3 px-4 text-cyan-400/50 hover:bg-cyan-900/20 hover:text-cyan-300 hover:translate-x-2 transition-all duration-200";
-  };
-
-  const getIconClass = (tab: Tab) => {
-    if (activeTab === tab) {
-      return "material-symbols-outlined font-variation-[FILL_1]";
-    }
-    return "material-symbols-outlined";
-  };
-
-  return (
-    <div className="absolute inset-0 z-10 flex text-on-background bg-surface selection:bg-cyan-400 selection:text-zinc-950 overflow-hidden font-body">
-      {/* Background Parallax Layer */}
-      <div className="fixed inset-0 z-0 opacity-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-surface-container-lowest animate-pulse-soft"></div>
-        <img 
-          className="w-full h-full object-cover grayscale opacity-10 mix-blend-screen" 
-          alt="Parallax City" 
-          src="https://images.unsplash.com/photo-1605806616949-1e87b487fc2f?q=80&w=2070&auto=format&fit=crop"
-        />
-      </div>
-
-      {/* TopNavBar Shell */}
-      <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 bg-transparent pointer-events-none">
-        <div className="text-2xl font-black italic text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] font-headline uppercase tracking-[0.1em] pointer-events-auto">
-          ECHO DRIFT
-        </div>
-        <div className="flex items-center gap-6 pointer-events-auto">
-          <Tooltip content="Launch Chronological Log View" position="bottom">
-            <button onClick={() => setActiveTab('TIMELINE')} className="hover:bg-theme-secondary/10 hover:skew-x-[-12deg] transition-all p-2 flex items-center gap-2 group cursor-pointer">
-              <span className="material-symbols-outlined text-cyan-400">timeline</span>
-              <span className="font-headline text-cyan-400/60 uppercase tracking-widest text-xs group-hover:text-cyan-300">HIST_BUFF</span>
-            </button>
-          </Tooltip>
-          <Tooltip content="Operator's Manual" position="bottom">
-            <button 
-              onClick={onHelp}
-              className="hover:bg-theme-secondary/10 hover:skew-x-[12deg] transition-all p-2 group"
-            >
-              <span className="material-symbols-outlined text-theme-primary group-hover:text-theme-secondary">support</span>
-            </button>
-          </Tooltip>
-          <Tooltip content="System Calibration" position="bottom">
-            <button 
-              onClick={onToggleSettings}
-              className="hover:bg-theme-primary/10 hover:skew-x-[-12deg] transition-all p-2 group"
-            >
-              <span className="material-symbols-outlined text-theme-primary">settings</span>
-            </button>
-          </Tooltip>
-        </div>
-      </nav>
-
-      {/* SideNavBar Shell */}
-      <aside className="fixed left-0 top-0 h-full flex flex-col z-40 bg-zinc-950/40 backdrop-blur-xl w-64 shadow-[10px_0_30px_-15px_rgba(0,240,255,0.2)]">
-        <div className="p-8 mt-20 flex-1 flex flex-col min-h-0">
-          <div className="flex items-center gap-3 mb-8 shrink-0">
-            <div className="w-10 h-10 bg-surface-container-highest border border-primary-container/20 flex items-center justify-center overflow-hidden">
-              <img 
-                alt="Pilot HUD Interface" 
-                className="w-full h-full object-cover grayscale brightness-150" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3XKP6gPFrlUsDDhJod43ogUy8PFeWUPRbaWqWeGNUXPrbMPWYLvlmZTd9ytSl-q9LQ4YV7LWC_IEbkWptNtaPCvxt38dDAVc5nfw9jwg01c7ZrYknc4OrkO6CU38SFLh7TzdXnEecVeGvJGao3AOhjmGfjA8PG63nf11BoK1qcKhh_fSRpkzt9LFi4c0j_3IqiHpKNDPLOalUeyqSwJ-rSNRqQR9yPgm4zRJPwvu1UB8ush8gwkEcv8kiY9TEVWSjCnpXQ5rgmzGO"
-              />
+const MainMenu: React.FC<MainMenuProps> = ({ onStart, bestTime, onNavigate }) => {
+    return (
+        <div className="flex-1 w-full h-full flex flex-col font-body text-white relative overflow-hidden bg-zinc-950 pointer-events-auto">
+            {/* Background Elements */}
+            <div className="absolute inset-0 pointer-events-none opacity-20">
+                <div className="absolute left-[20%] top-0 bottom-0 w-[1px] bg-white/10 -skew-x-[15deg]"></div>
+                <div className="absolute right-[20%] top-0 bottom-0 w-[1px] bg-white/10 skew-x-[15deg]"></div>
             </div>
-            <div>
-              <h2 className="text-cyan-400 font-bold font-headline text-sm tracking-tighter uppercase">SECTOR {Math.floor((highestUnlockedLevel - 1) / 5) + 1}-{String.fromCharCode(64 + ((highestUnlockedLevel - 1) % 5) + 1)}</h2>
-              <p className="text-[10px] text-cyan-400/50 uppercase tracking-widest block" title="TIMELINE_SYNCED">TIMELINE_SYNCED (v{highestUnlockedLevel}.0)</p>
-            </div>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto no-scrollbar space-y-2 pr-2">
-            <button onClick={() => setActiveTab('MISSION')} className={getTabClass('MISSION')}>
-              <span className={getIconClass('MISSION')}>rocket_launch</span>
-              <span className="font-headline tracking-tighter uppercase text-sm">MISSION</span>
-            </button>
-            <button onClick={() => setActiveTab('TIMELINE')} className={getTabClass('TIMELINE')}>
-              <span className={getIconClass('TIMELINE')}>history_toggle_off</span>
-              <span className="font-headline tracking-tighter uppercase text-sm">TIMELINE</span>
-            </button>
-            <button onClick={() => setActiveTab('CHART')} className={getTabClass('CHART')}>
-              <span className={getIconClass('CHART')}>bar_chart</span>
-              <span className="font-headline tracking-tighter uppercase text-sm">CHART</span>
-            </button>
-            <button onClick={() => setActiveTab('MEMORIES')} className={getTabClass('MEMORIES')}>
-              <span className={getIconClass('MEMORIES')}>auto_awesome_motion</span>
-              <span className="font-headline tracking-tighter uppercase text-sm">MEMORIES</span>
-            </button>
-          </div>
-        </div>
 
-        <div className="p-8 border-t border-cyan-500/10 shrink-0">
-          <button 
-            onClick={onStart}
-            className="w-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 font-headline uppercase py-3 text-sm hover:bg-cyan-400 hover:text-zinc-950 hover:shadow-[0_0_15px_#00F0FF] transition-all"
-          >
-            INITIATE DRIFT
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="ml-64 h-full relative z-10 flex w-full animated-scrollbar pb-20 overflow-y-auto">
-        <div className="m-auto flex flex-col items-center justify-center w-full min-h-max py-20 pointer-events-auto">
-            {activeTab === 'MISSION' && (
-            <div className="max-w-4xl w-full px-12 flex flex-col items-start pointer-events-auto">
-                <div className="mb-16 relative">
-                  <div className="absolute -top-12 -left-8 text-[100px] font-black text-theme-primary/5 select-none pointer-events-none font-headline">010101</div>
-                  <h1 className="text-9xl font-black font-headline tracking-[-0.05em] glitch-text leading-none text-white italic">
-                      ECHO<br/><span className="text-theme-primary">DRIFT</span>
-                  </h1>
-                  <div className="mt-4 flex items-center gap-4">
-                      <div className="h-[1px] w-24 bg-theme-primary"></div>
-                      <p className="font-headline uppercase text-theme-primary tracking-[0.5em] text-xs">Synchronizing Temporal Nodes...</p>
-                  </div>
+            {/* TOP BAR */}
+            <div className="w-full h-16 border-b border-white/10 flex justify-between items-center px-12 z-30 bg-zinc-950/80 backdrop-blur-md shrink-0">
+                <div className="flex items-center gap-4">
+                    <span 
+                      onClick={() => onNavigate('MENU')}
+                      className="font-headline font-black italic tracking-widest text-lg cursor-pointer hover:text-white transition-colors"
+                    >
+                      ECHO DRIFT <span className="text-zinc-600">// SYSTEM_OS</span>
+                    </span>
                 </div>
-
-                <div className="grid grid-cols-12 gap-4 w-full">
-                  <button 
-                      onClick={onStart}
-                      className="col-span-8 bg-theme-primary p-8 flex items-end justify-between group hover:shadow-[0_0_30px_rgba(var(--theme-primary),0.6)] transition-all relative overflow-hidden"
-                  >
-                      <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-30 transition-opacity">
-                      <span className="material-symbols-outlined text-6xl text-zinc-950">speed</span>
-                      </div>
-                      <div className="text-left">
-                      <div className="text-zinc-950 font-headline font-black text-4xl uppercase tracking-tighter leading-none mb-1">INITIATE DRIFT</div>
-                      <div className="text-zinc-950/60 font-body text-sm font-bold uppercase tracking-widest">Begin Synchronization Sequence</div>
-                      </div>
-                      <span className="material-symbols-outlined text-zinc-950 text-4xl group-hover:translate-x-2 transition-transform">arrow_forward</span>
-                  </button>
-
-                  <button onClick={onToggleSettings} className="col-span-4 glass-panel border border-theme-primary/10 p-6 flex flex-col justify-between hover:bg-theme-primary/5 transition-colors group">
-                      <span className="material-symbols-outlined text-theme-primary text-3xl mb-4 text-left">settings_input_component</span>
-                      <div className="text-left">
-                      <div className="text-theme-primary font-headline font-bold text-lg uppercase leading-none mb-1">CALIBRATION</div>
-                      <p className="text-[10px] text-theme-primary/40 uppercase tracking-widest">Sector Settings</p>
-                      </div>
-                  </button>
-
-                  <button onClick={() => setActiveTab('MEMORIES')} className="col-span-12 glass-panel border border-theme-secondary/10 p-6 flex flex-col justify-between hover:bg-theme-secondary/10 transition-colors group">
-                      <span className="material-symbols-outlined text-theme-secondary mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
-                      <div className="text-left">
-                      <div className="text-theme-secondary font-headline font-bold text-lg uppercase leading-none mb-1">MISSION LOG</div>
-                      <p className="text-[10px] text-theme-secondary/40 uppercase tracking-widest">Transmission Credits</p>
-                      </div>
-                  </button>
-                  
-                  <div className="col-span-12 h-0.5 bg-gradient-to-r from-theme-primary/20 via-theme-secondary/20 to-theme-primary/20 my-2"></div>
-
-                  <div className="col-span-12 border border-outline-variant/20 p-6 flex items-center justify-between">
-                      <div className="flex flex-col gap-1 items-start">
-                      <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-theme-primary animate-pulse"></span>
-                          <span className="text-[10px] font-headline text-theme-primary/80 uppercase">Node Alpha: Online</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-theme-secondary/20"></span>
-                          <span className="text-[10px] font-headline text-zinc-500 uppercase">Temporal Echo: Stable</span>
-                      </div>
-                      </div>
-                      <div className="text-right">
-                      <div className="text-2xl font-headline font-bold text-white leading-none">24.09</div>
-                      <div className="text-[9px] uppercase tracking-tighter text-zinc-600 block">v0.4.2-STABLE</div>
-                      </div>
-                  </div>
+                <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-2 border border-white/20 px-3 py-1 bg-black/50">
+                        <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest leading-none">Command_Core<br/><span className="text-white">OPERATOR_01_HUB</span></span>
+                    </div>
+                    <div className="flex items-center gap-6 text-zinc-500">
+                        <span onClick={() => onNavigate('ANALYTICS')} className="material-symbols-outlined text-sm hover:text-white cursor-pointer transition-colors" title="Analytics">laptop_windows</span>
+                        <span onClick={() => onNavigate('TIMELINE')} className="material-symbols-outlined text-sm hover:text-white cursor-pointer transition-colors" title="Timeline">wifi_tethering</span>
+                        <span onClick={() => onNavigate('MEMORIES')} className="material-symbols-outlined text-sm hover:text-white cursor-pointer transition-colors" title="Memories">memory</span>
+                    </div>
                 </div>
             </div>
-            )}
 
-            {activeTab === 'TIMELINE' && <TimelineScreen highestUnlockedLevel={highestUnlockedLevel} />}
-            {activeTab === 'CHART' && <ChartScreen highestUnlockedLevel={highestUnlockedLevel} />}
-            {activeTab === 'MEMORIES' && <MemoriesScreen highestUnlockedLevel={highestUnlockedLevel} />}
+            {/* SCROLLABLE CONTENT WRAPPER */}
+            <div className="flex-1 flex overflow-hidden">
+                {/* CENTER: Central Interaction Hub */}
+                <main className="flex-1 min-w-[500px] flex flex-col p-12 pt-20 pl-16 overflow-y-auto animated-scrollbar">
+                    <div className="space-y-4 mb-16">
+                        <span className="text-[10px] font-mono uppercase tracking-[0.8em] text-zinc-600 block animate-pulse">INITIATING_SESSION</span>
+                        <h2 className="text-7xl font-black font-headline italic uppercase tracking-tighter leading-none select-none">
+                            OPERATOR<br/><span className="text-zinc-800">HUB_CENTRAL</span>
+                        </h2>
+                    </div>
+
+                    <button 
+                        onClick={onStart}
+                        className="group relative w-full max-w-[500px] transition-transform hover:-translate-y-2 hover:scale-[1.01] cursor-pointer"
+                    >
+                        {/* Skewed Container */}
+                        <div className="absolute inset-0 border-2 border-white/20 -skew-x-[15deg] group-hover:border-white transition-colors duration-300 shadow-[0_0_50px_rgba(255,255,255,0.02)]"></div>
+                        <div className="absolute inset-0 bg-white scale-y-0 group-hover:scale-y-100 transition-transform origin-bottom duration-500 -skew-x-[15deg]"></div>
+                        
+                        <div className="relative px-12 py-12 flex flex-col gap-6">
+                            <span className="text-[10px] font-mono uppercase tracking-[0.5em] text-zinc-500 group-hover:text-zinc-950 transition-colors text-left">CRITICAL_ACTION: Neural_Link_09</span>
+                            <div className="flex justify-between items-center text-white group-hover:text-zinc-950 transition-colors">
+                                <h2 className="text-5xl font-black font-headline italic uppercase tracking-tighter text-left leading-none">BEGIN<br/>DRIFT</h2>
+                                <span className="material-symbols-outlined text-6xl group-hover:translate-x-6 transition-transform">rocket_launch</span>
+                            </div>
+                            <div className="mt-6 border-t border-white/10 group-hover:border-zinc-950/20 pt-6 flex justify-between items-end">
+                                <div className="text-left space-y-2">
+                                    <span className="block text-[8px] font-mono uppercase tracking-widest text-zinc-500 group-hover:text-zinc-800 transition-colors">Sector_Status: Unstable</span>
+                                    <span className="block text-[8px] font-mono uppercase tracking-widest text-zinc-600 group-hover:text-zinc-900 transition-colors">Target: Node_Sector_09_Alpha</span>
+                                </div>
+                                <span className="text-[10px] font-mono text-zinc-700 group-hover:text-zinc-950 font-bold">V.4.029</span>
+                            </div>
+                        </div>
+                    </button>
+                </main>
+
+                {/* RIGHT: Diagnostics Sidebar */}
+                <aside className="w-80 shrink-0 border-l border-white/10 p-8 pt-20 flex flex-col gap-8 bg-zinc-950/20 backdrop-blur overflow-y-auto animated-scrollbar">
+                    <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+                        <div className="w-2 h-2 bg-white animate-ping"></div>
+                        <h3 className="text-[10px] font-mono uppercase tracking-[0.6em] text-zinc-500">LIVE_TELEMETRY</h3>
+                    </div>
+                    
+                    {/* Status Blocks */}
+                    <div className="space-y-6">
+                        <div className="relative p-6 -skew-x-[15deg] border border-white/5 bg-zinc-950/40 backdrop-blur hover:border-white/40 transition-all group overflow-hidden">
+                            <div className="skew-x-[15deg] space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[8px] font-mono uppercase tracking-[0.4em] text-zinc-500">Stability_Indx</span>
+                                    <span className="material-symbols-outlined text-xs text-zinc-700">query_stats</span>
+                                </div>
+                                <div className="text-4xl font-black font-headline italic tracking-tighter">98.4<span className="text-zinc-800">2%</span></div>
+                                <div className="h-1 w-full bg-zinc-900"><div className="h-full bg-white w-[98%]"></div></div>
+                            </div>
+                        </div>
+
+                        <div className="relative p-6 -skew-x-[15deg] border border-white/5 bg-zinc-950/40 backdrop-blur hover:border-white/40 transition-all group overflow-hidden">
+                            <div className="skew-x-[15deg] space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[8px] font-mono uppercase tracking-[0.4em] text-zinc-500">Neural_Sync</span>
+                                    <span className="material-symbols-outlined text-xs text-zinc-700">bolt</span>
+                                </div>
+                                <div className="text-4xl font-black font-headline italic tracking-tighter">0.04<span className="text-lg text-zinc-800 ml-2">MS</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Terminal Block */}
+                    <div className="bg-black/40 border border-white/10 p-6 space-y-3 font-mono text-[9px] text-zinc-600 uppercase tracking-widest mt-auto">
+                        <div className="text-[7px] text-zinc-800 mb-2 border-b border-white/5 pb-1">AUTH_SYSTEM_LOGS</div>
+                        <div className="flex items-center gap-3"><span className="text-zinc-800">00:01</span> {'>'} CORE_INIT_SUCCESS</div>
+                        <div className="flex items-center gap-3"><span className="text-zinc-800">00:02</span> {'>'} SECTOR_MAP_LOCK</div>
+                        <div className="flex items-center gap-3"><span className="text-white animate-pulse">00:04</span> {'>'} AWAITING_CMD_INPUT_</div>
+                    </div>
+
+                    <div className="flex justify-center gap-6 pt-6 border-t border-white/5">
+                        <span onClick={() => onNavigate('SETTINGS')} className="material-symbols-outlined text-zinc-500 text-sm hover:text-white cursor-pointer transition-colors">settings</span>
+                        <span onClick={() => onNavigate('HELP')} className="material-symbols-outlined text-zinc-500 text-sm hover:text-white cursor-pointer transition-colors">help_outline</span>
+                    </div>
+                </aside>
+            </div>
         </div>
-      </main>
-
-      {/* Global Bottom Navbar - Redesigned to fix shaking and add hover effects */}
-      <footer className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 bg-zinc-950/80 backdrop-blur-md h-20 border-t border-cyan-500/20 shadow-[0_-10px_40px_rgba(0,240,255,0.1)]">
-        {[
-          { icon: 'speed', label: 'DASH', action: () => setActiveTab('MISSION') },
-          { icon: 'radar', label: 'SCAN', action: () => setActiveTab('CHART') },
-          { icon: 'waves', label: 'DRIFT', special: true, action: onStart },
-          { icon: 'explore', label: 'MAP', action: () => setActiveTab('MISSION') },
-          { icon: 'terminal', label: 'LOG', action: () => setActiveTab('MEMORIES') }
-        ].map((item, id) => (
-          item.special ? (
-            <div key={id} onClick={item.action} className="flex flex-col items-center justify-center bg-cyan-400 text-zinc-950 p-3 scale-110 shadow-[0_0_15px_#00F0FF] hover-glitch-jitter cursor-pointer transition-transform group">
-                <span className="material-symbols-outlined font-variation-[FILL_1]">waves</span>
-                <span className="font-headline font-black text-[10px] uppercase tracking-widest mt-1">DRIFT</span>
-            </div>
-          ) : (
-            <div key={id} onClick={item.action} className="flex flex-col items-center justify-center text-cyan-400/40 hover:text-cyan-200 hover:drop-shadow-[0_0_8px_#00f0ff] hover:scale-110 transition-all cursor-pointer group">
-                <span className="material-symbols-outlined group-hover:animate-pulse">{item.icon}</span>
-                <span className="font-headline text-[10px] uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{item.label}</span>
-            </div>
-          )
-        ))}
-      </footer>
-
-      {/* Decorative Corner Elements */}
-      <div className="fixed top-0 right-0 w-32 h-32 border-r border-t border-cyan-400/20 m-4 pointer-events-none z-[60]"></div>
-      <div className="fixed bottom-0 right-0 w-32 h-32 border-r border-b border-cyan-400/20 m-4 pointer-events-none z-[60]"></div>
-    </div>
-  );
+    );
 };
 
 export default MainMenu;

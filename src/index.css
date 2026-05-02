@@ -5,9 +5,15 @@
 @config "../tailwind.config.js";
 
 :root {
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
   --theme-primary: 0 240 255;
   --theme-secondary: 255 0 255;
-  --theme-bg: #131318;
+  --theme-bg: #0a0a0f;
+}
+
+.sidebar-transition {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 
@@ -77,28 +83,30 @@
     clip-path: polygon(5% 0, 100% 0, 100% 100%, 0% 100%);
 }
 
-/* Custom Animated Scrollbar */
+/* Custom Animated Scrollbar (VISIBLE) */
 .animated-scrollbar {
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #00f0ff transparent;
+  scrollbar-color: #ffffff transparent;
 }
 
 .animated-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 .animated-scrollbar::-webkit-scrollbar-track {
-  background: rgba(20, 20, 25, 0.8);
-  border-left: 1px solid rgba(0, 240, 255, 0.1);
+  background: rgba(10, 10, 15, 0.9);
 }
 .animated-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #00f0ff 0%, #ff00ff 100%);
-  border-radius: 4px;
+  background: #ffffff;
+  border-radius: 0;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 .animated-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #ff00ff;
-  box-shadow: 0 0 15px #ff00ff;
+  background: #ffffff;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
 }
+
+
 
 /* Clean Sidebar (No Scrollbar Visible) */
 .no-scrollbar::-webkit-scrollbar {

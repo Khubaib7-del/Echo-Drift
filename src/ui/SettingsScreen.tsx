@@ -1,4 +1,5 @@
 import React from 'react';
+import { SettingsClose } from './CustomIcons';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -14,85 +15,120 @@ interface SettingsScreenProps {
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, config, setConfig, resetToDefaults }) => {
   return (
-    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl overflow-hidden">
-      <div className="w-full max-w-2xl border border-theme-primary/20 bg-zinc-950 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-        <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-          <h2 className="text-2xl font-black font-headline text-white uppercase italic tracking-wider">Visual & System Calibration</h2>
-          <button onClick={onBack} className="material-symbols-outlined text-zinc-500 hover:text-white transition-colors cursor-pointer">close</button>
-        </div>
+    <div className="fixed inset-0 z-[1000] bg-black/98 backdrop-blur-3xl overflow-y-auto animated-scrollbar pointer-events-auto flex flex-col p-8 md:p-24">
+      
+      {/* Background Detail */}
+      <div className="fixed inset-0 pointer-events-none opacity-5">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-white -skew-x-[15deg] translate-x-1/4"></div>
+      </div>
 
-        <div className="space-y-6 max-h-[60vh] overflow-y-auto animated-scrollbar pr-4">
-          
-          <div className="glass-panel p-4 border border-theme-primary/10">
-            <h3 className="font-headline font-bold text-theme-primary text-sm uppercase mb-4">Color Overrides</h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-400 uppercase font-headline">Primary Accent</span>
-                <input 
-                  type="color" 
-                  value={config.themePrimary} 
-                  onChange={(e) => setConfig({ ...config, themePrimary: e.target.value })}
-                  className="w-12 h-8 cursor-pointer bg-transparent border-0 outline-none" 
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-400 uppercase font-headline">Secondary Accent</span>
-                <input 
-                  type="color" 
-                  value={config.themeSecondary} 
-                  onChange={(e) => setConfig({ ...config, themeSecondary: e.target.value })}
-                  className="w-12 h-8 cursor-pointer bg-transparent border-0 outline-none" 
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-400 uppercase font-headline">Background Tone</span>
-                <input 
-                  type="color" 
-                  value={config.themeBackground} 
-                  onChange={(e) => setConfig({ ...config, themeBackground: e.target.value })}
-                  className="w-12 h-8 cursor-pointer bg-transparent border-0 outline-none" 
-                />
-              </div>
-            </div>
-            
-            <div className="mt-4 p-3 bg-theme-primary/5 border border-theme-primary/20 flex gap-4 items-center">
-               <span className="text-xs text-zinc-400 tracking-widest uppercase">Preview:</span>
-               <div className="flex-1 h-2 bg-theme-primary rounded-full"></div>
-               <div className="flex-1 h-2 bg-theme-secondary rounded-full"></div>
+      <div className="w-full max-w-5xl mx-auto flex flex-col relative z-10 flex-1">
+        
+        {/* Header */}
+        <header className="flex justify-between items-start mb-32 border-b border-white/10 pb-16">
+          <div className="space-y-6">
+            <h2 className="text-8xl font-black font-headline italic uppercase leading-none tracking-tighter text-white">CALIBRATION</h2>
+            <div className="flex items-center gap-4">
+              <span className="w-12 h-0.5 bg-white"></span>
+              <p className="text-[10px] font-mono uppercase tracking-[1em] text-zinc-500">Global_Parameter_Override</p>
             </div>
           </div>
-
-          <div className="glass-panel p-4 border border-theme-primary/10">
-            <h3 className="font-headline font-bold text-theme-primary text-sm uppercase mb-4">Typography</h3>
-            <select 
-                value={config.fontFamily} 
-                onChange={(e) => setConfig({ ...config, fontFamily: e.target.value })}
-                className="w-full bg-zinc-900 border border-theme-primary/30 text-white p-2 font-headline cursor-pointer outline-none mb-2"
-            >
-                <option value='"Space Grotesk"'>Space Grotesk (Default)</option>
-                <option value='"JetBrains Mono", monospace'>JetBrains Mono (Console)</option>
-                <option value='"Inter", sans-serif'>Inter (Clean)</option>
-            </select>
+          <div className="flex flex-col items-end gap-3">
+            <SettingsClose onClick={onBack} />
+            <span className="text-[8px] font-mono text-zinc-500 tracking-widest uppercase">DISCONNECT</span>
           </div>
-          
-        </div>
+        </header>
 
-        <div className="mt-8 pt-4 border-t border-white/5 flex gap-4">
-           <button 
-             onClick={resetToDefaults}
-             className="flex-1 py-3 bg-red-500/10 border border-red-500/30 text-red-400 font-headline uppercase text-xs hover:bg-red-500/20 transition-all cursor-pointer"
-           >
-             RESET DEFAULTS
-           </button>
-           <button 
-             onClick={onBack}
-             className="flex-1 py-3 bg-theme-primary/10 border border-theme-primary/30 text-theme-primary font-headline uppercase text-xs hover:bg-theme-primary hover:text-zinc-950 transition-all cursor-pointer shadow-[0_0_15px_var(--theme-primary)] shadow-theme-primary/20"
-           >
-             CONFIRM CALIBRATION
-           </button>
+        <div className="flex flex-col gap-24 pb-32">
+          
+          {/* CHROMATIC SECTION */}
+          <section className="space-y-12">
+            <div className="flex items-center gap-6">
+               <span className="text-zinc-700 font-mono text-xs">01 //</span>
+               <h3 className="text-2xl font-black font-headline italic uppercase tracking-widest text-white">Neural_Color_Array</h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-1">
+              {[
+                { label: 'Primary_Sync', val: config.themePrimary, key: 'themePrimary', desc: 'Active UI focus and energetic feedback.' },
+                { label: 'Secondary_Link', val: config.themeSecondary, key: 'themeSecondary', desc: 'Peripheral data and status highlights.' },
+                { label: 'Base_Obsidian', val: config.themeBackground, key: 'themeBackground', desc: 'Core environmental atmosphere.' }
+              ].map((color) => (
+                <div key={color.label} className="group relative flex items-center justify-between p-8 bg-zinc-900/20 border border-white/5 hover:bg-zinc-900/40 hover:border-white/20 transition-all">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">{color.label}</span>
+                    <p className="text-[8px] font-mono text-zinc-700 uppercase">{color.desc}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-12">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase">{color.val}</span>
+                    <input 
+                      type="color" 
+                      value={color.val}
+                      onChange={(e) => setConfig({ ...config, [color.key]: e.target.value })}
+                      className="w-32 h-12 bg-transparent border-0 cursor-pointer outline-none"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* TYPOGRAPHY SECTION */}
+          <section className="space-y-12">
+            <div className="flex items-center gap-6">
+               <span className="text-zinc-700 font-mono text-xs">02 //</span>
+               <h3 className="text-2xl font-black font-headline italic uppercase tracking-widest text-white">Symbol_Processor</h3>
+            </div>
+            
+            <div className="bg-zinc-900/20 border border-white/5 p-8 flex flex-col md:flex-row justify-between items-end gap-12">
+              <div className="flex-1 space-y-6">
+                <select 
+                  value={config.fontFamily} 
+                  onChange={(e) => setConfig({ ...config, fontFamily: e.target.value })}
+                  className="w-full bg-transparent border-0 text-5xl font-black font-headline italic uppercase tracking-tighter text-white cursor-pointer outline-none"
+                >
+                  <option className="bg-zinc-950" value='"Space Grotesk"'>Space_Grotesk</option>
+                  <option className="bg-zinc-950" value='"JetBrains Mono"'>JetBrains_Mono</option>
+                  <option className="bg-zinc-950" value='"Inter"'>Inter_Static</option>
+                </select>
+                <p className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest leading-relaxed">
+                   Changes the visual rendering of all neural data streams. High-contrast sans-serif recommended.
+                </p>
+              </div>
+              <div className="w-1/3 h-24 border border-white/5 bg-zinc-950/50 flex items-center justify-center overflow-hidden">
+                <span className="text-3xl font-black italic text-white/10 select-none -rotate-12">PREVIEW</span>
+              </div>
+            </div>
+          </section>
+
+          {/* SYSTEM OVERRIDE */}
+          <section className="pt-12 border-t border-white/5">
+            <div className="bg-red-500/5 p-8 border border-red-500/10 flex justify-between items-center group hover:bg-red-500/10 transition-colors">
+              <div className="space-y-1">
+                <h4 className="text-xl font-black font-headline italic uppercase text-red-500">HARD_RESET</h4>
+                <p className="text-[8px] font-mono text-red-900 uppercase">Clear all cached parameters and revert to factory defaults.</p>
+              </div>
+              <button 
+                onClick={resetToDefaults}
+                className="px-8 py-3 bg-red-600 text-white font-black font-headline italic text-xs uppercase hover:bg-white hover:text-red-600 transition-all shadow-[0_0_20px_rgba(255,0,0,0.2)]"
+              >
+                Execute_Wipe
+              </button>
+            </div>
+          </section>
+
+          {/* Confirm Button */}
+          <div className="mt-12 flex justify-center">
+             <button 
+               onClick={onBack}
+               className="w-full max-w-md py-6 bg-white text-black font-black font-headline italic text-3xl uppercase tracking-tighter hover:scale-[1.02] transition-transform"
+               style={{ transform: 'skewX(-15deg)' }}
+             >
+                Apply_Changes
+             </button>
+          </div>
+
         </div>
       </div>
     </div>

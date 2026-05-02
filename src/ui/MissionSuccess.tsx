@@ -1,151 +1,169 @@
 import React from 'react';
 
 interface MissionSuccessProps {
-  onNext: () => void;
-  onMenu: () => void;
-  onToggleSettings: () => void;
+    levelId: number;
+    completionTime: number;
+    stability: number;
+    onRetry: () => void;
+    onNextLevel: () => void;
+    onReturnToHub: () => void;
 }
 
-const MissionSuccess: React.FC<MissionSuccessProps> = ({ onNext, onMenu, onToggleSettings }) => {
-  return (
-    <div className="absolute inset-0 z-50 bg-theme-bg text-on-surface font-body h-screen w-screen selection:bg-theme-primary selection:text-zinc-950 overflow-hidden pointer-events-auto">
-      {/* Blurred Gameplay Background Layer */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <img 
-          className="w-full h-full object-cover filter blur-xl brightness-[0.3] scale-110" 
-          alt="abstract sci-fi landscape" 
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_zqBcwuqzqLI6bMSJNs_aCyZVEQ01mwy2BP6cO-ZDG9P8svthff_FJZtVgZR4clKuDSxVm8mX2tu3yjzOX6GvQ0H3qukmxWK1goD1F5xFhHH5wjVZt46oyycfr9-lLeJOEJ1Jv8YKFGeTL74jPh8t5ggzlbk7LnNqPYWC1ulCN508rq3ht3Ku4Y6gnbdVjAJxq36c36TDUJNszhyhQKMlx0PWoVgs1UnTO7-vqwBIJ1U7n4lSbFjWIW2iQaU5xu51Lwxgso9vnd-S"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50"></div>
-      </div>
+const MissionSuccess: React.FC<MissionSuccessProps> = ({ 
+    levelId, completionTime, stability, 
+    onRetry, onNextLevel, onReturnToHub 
+}) => {
+    
+    const formatTime = (ms: number) => {
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const milliseconds = ms % 1000;
+        return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}:${milliseconds.toString().padStart(3, '0').substring(0, 2)}`;
+    };
 
-      {/* Particle/Glow Overlays */}
-      <div className="fixed inset-0 z-10 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-theme-primary/10 blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-theme-secondary/10 blur-[120px] animate-pulse delay-700"></div>
-      </div>
-
-      {/* Shared Header Component */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 bg-transparent text-white pointer-events-none">
-        <div className="text-2xl font-black italic text-theme-primary drop-shadow-[0_0_8px_rgba(var(--theme-primary),0.8)] font-headline uppercase tracking-[0.1em] pointer-events-auto">
-          ECHO DRIFT
-        </div>
-        <div className="flex gap-6 pointer-events-auto">
-          <button className="hover:bg-theme-primary/10 hover:skew-x-[-12deg] transition-all p-2 group">
-            <span className="material-symbols-outlined text-theme-primary">timeline</span>
-          </button>
-          <button 
-            onClick={onToggleSettings}
-            className="hover:bg-theme-primary/10 hover:skew-x-[-12deg] transition-all p-2 group"
-          >
-            <span className="material-symbols-outlined text-theme-primary">settings</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content Canvas (Scrollable) */}
-      <main className="relative z-20 h-full w-full overflow-y-auto animated-scrollbar flex flex-col items-center p-6 md:p-12 pt-32 pb-40">
-        <div className="max-w-6xl w-full flex flex-col items-center">
-            {/* Victory Headline */}
-            <div className="text-center mb-16 space-y-2 w-full pointer-events-none">
-              <p className="font-headline text-theme-primary tracking-[0.4em] text-sm mb-4 uppercase">OBJECTIVE REACHED</p>
-              <h1 className="font-headline text-5xl md:text-8xl font-black italic tracking-tighter text-white drop-shadow-[0_0_30px_rgba(var(--theme-primary),0.4)]">
-                SYNCHRONIZATION COMPLETE
-              </h1>
-              <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-theme-primary/50 to-transparent mt-8"></div>
+    return (
+        <div className="flex-1 w-full h-full flex font-body text-white relative overflow-hidden bg-zinc-950 p-12">
+            
+            {/* Background Decor */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute left-[20%] top-0 bottom-0 w-[1px] bg-white/10 -skew-x-[15deg]"></div>
+                <div className="absolute right-[10%] top-0 bottom-0 w-[1px] bg-white/5 skew-x-[15deg]"></div>
+                <div className="absolute bottom-12 left-12 font-mono text-[9px] text-zinc-700 tracking-[0.5em] uppercase">
+                    SYS_V.04 // SEC_CLR_LOG
+                </div>
             </div>
 
-            {/* Bento Grid Stats Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-white pointer-events-none">
-              {/* Stat Card: Time */}
-              <div className="glass-panel border-l-2 border-theme-primary p-8 relative group overflow-hidden">
-                <div className="absolute top-0 right-0 p-2 text-theme-primary/20 font-headline font-black text-6xl">01</div>
-                <label className="font-headline text-xs text-theme-primary tracking-widest block mb-1 uppercase">CHRONO_DATA</label>
-                <h3 className="font-headline text-xl text-zinc-300 uppercase mb-4">Time Elapsed</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-headline text-5xl font-bold text-white">04:12</span>
-                  <span className="text-white/40 font-headline text-sm">.88</span>
+            <main className="w-full max-w-5xl mx-auto flex flex-col justify-center relative z-10 pl-24">
+                
+                {/* Header (White Slab) */}
+                <div className="relative w-full max-w-xl p-8 bg-white text-zinc-950 -skew-x-[15deg] mb-[-2rem] z-20 shadow-2xl ml-12">
+                    <div className="skew-x-[15deg] flex justify-between items-end">
+                        <div>
+                            <span className="block text-[10px] font-mono uppercase tracking-[0.4em] text-zinc-500 mb-2">Mission_Status</span>
+                            <h2 className="text-4xl font-black font-headline italic uppercase tracking-tighter leading-none">Clear</h2>
+                        </div>
+                        <div className="text-right">
+                            <span className="block text-[9px] font-mono uppercase tracking-widest text-zinc-400">Sector_ID</span>
+                            <span className="text-sm font-black font-headline tracking-widest uppercase">Void_Runner // LVL_0{levelId}</span>
+                        </div>
+                    </div>
                 </div>
-                <div className="mt-4 h-1 bg-surface-container-highest w-full overflow-hidden">
-                  <div className="h-full bg-theme-primary w-3/4"></div>
-                </div>
-              </div>
 
-              {/* Stat Card: Echoes */}
-              <div className="glass-panel border-l-2 border-theme-secondary p-8 relative group overflow-hidden">
-                <div className="absolute top-0 right-0 p-2 text-theme-secondary/20 font-headline font-black text-6xl">02</div>
-                <label className="font-headline text-xs text-theme-secondary tracking-widest block mb-1 uppercase">PULSE_SYNC</label>
-                <h3 className="font-headline text-xl text-zinc-300 uppercase mb-4">Echoes Triggered</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-headline text-5xl font-bold text-white">24</span>
-                  <span className="text-white/40 font-headline text-sm">/ 30</span>
-                </div>
-                <div className="mt-4 flex gap-1">
-                  <div className="h-1 bg-theme-secondary flex-1"></div>
-                  <div className="h-1 bg-theme-secondary flex-1"></div>
-                  <div className="h-1 bg-theme-secondary flex-1"></div>
-                  <div className="h-1 bg-theme-secondary/20 flex-1"></div>
-                </div>
-              </div>
+                {/* Main Data Panel */}
+                <div className="relative w-full p-12 bg-zinc-900 border border-white/10 -skew-x-[15deg] shadow-2xl">
+                    <div className="skew-x-[15deg] flex gap-16">
+                        
+                        {/* Left Stats */}
+                        <div className="w-1/3 flex flex-col gap-8 justify-center border-l-2 border-white/20 pl-6">
+                            <div>
+                                <span className="block text-[9px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-1">Completion_Time</span>
+                                <span className="text-2xl font-black font-headline tabular-nums">{formatTime(completionTime * 1000)}</span>
+                            </div>
+                            <div>
+                                <span className="block text-[9px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-1">Temporal_Sync</span>
+                                <span className="text-2xl font-black font-headline tabular-nums">{stability.toFixed(1)}%</span>
+                            </div>
+                            <div>
+                                <span className="block text-[9px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-1">Echo_Avoidance_Score</span>
+                                <span className="text-2xl font-black font-headline tabular-nums">0.942</span>
+                            </div>
+                        </div>
 
-              {/* Stat Card: Secrets */}
-              <div className="glass-panel border-l-2 border-theme-primary p-8 relative group overflow-hidden">
-                <div className="absolute top-0 right-0 p-2 text-theme-primary/20 font-headline font-black text-6xl">03</div>
-                <label className="font-headline text-[10px] text-theme-primary tracking-widest block mb-1 uppercase truncate w-full">DATA_RETRIEVAL</label>
-                <h3 className="font-headline text-lg text-zinc-300 uppercase mb-4 truncate w-full">Cores Found</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-headline text-5xl font-bold text-white">03</span>
-                  <span className="text-white/40 font-headline text-sm uppercase">CORES</span>
+                        {/* Right Log Stream */}
+                        <div className="flex-1">
+                            <div className="flex justify-between items-end mb-6 border-b border-white/10 pb-2">
+                                <span className="text-sm font-black font-headline uppercase tracking-[0.2em]">Data_Log_Stream</span>
+                                <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest">Decrypted // Ready</span>
+                            </div>
+                            <div className="space-y-4 font-mono text-[10px] uppercase tracking-widest">
+                                <div className="flex gap-4 items-center">
+                                    <span className="text-zinc-600">001</span>
+                                    <span className="flex-1 text-white">Entry_Point_Sync</span>
+                                    <span className="text-zinc-500 w-16 text-right">00:12:04</span>
+                                    <span className="text-zinc-500 w-16 text-right">+0.00ms</span>
+                                </div>
+                                <div className="flex gap-4 items-center">
+                                    <span className="text-zinc-600">002</span>
+                                    <span className="flex-1 text-white">Node_Alpha_Decrypt</span>
+                                    <span className="text-zinc-500 w-16 text-right">01:04:22</span>
+                                    <span className="text-zinc-500 w-16 text-right">-0.04ms</span>
+                                </div>
+                                <div className="flex gap-4 items-center">
+                                    <span className="text-zinc-600">003</span>
+                                    <span className="flex-1 text-red-400">Temporal_Flicker</span>
+                                    <span className="text-zinc-500 w-16 text-right">02:11:59</span>
+                                    <span className="text-red-400 w-16 text-right">+12.4ms</span>
+                                </div>
+                                <div className="flex gap-4 items-center pb-4 border-b border-white/5">
+                                    <span className="text-zinc-600">004</span>
+                                    <span className="flex-1 text-white">Memory_Shard_Retrieved</span>
+                                    <span className="text-zinc-500 w-16 text-right">03:40:11</span>
+                                    <span className="text-zinc-500 w-16 text-right">+0.00ms</span>
+                                </div>
+                                <div className="flex gap-4 items-center pt-2">
+                                    <span className="text-zinc-600">TOT</span>
+                                    <span className="flex-1 font-bold text-white">Accumulated_Latency</span>
+                                    <span className="w-16"></span>
+                                    <span className="text-white font-bold w-16 text-right">12.36ms</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="mt-4 flex gap-2">
-                  <span className="material-symbols-outlined text-theme-primary font-variation-[FILL_1]">token</span>
-                  <span className="material-symbols-outlined text-theme-primary font-variation-[FILL_1]">token</span>
-                  <span className="material-symbols-outlined text-theme-primary font-variation-[FILL_1]">token</span>
+
+                {/* Sub Stats Row */}
+                <div className="flex w-full mt-6 justify-center gap-8 -skew-x-[15deg]">
+                    <div className="w-1/3 flex flex-col items-center justify-center p-6 bg-zinc-950/80 border border-white/5">
+                        <span className="text-5xl font-black font-headline italic tracking-tighter skew-x-[15deg] text-white">S+</span>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-zinc-600 skew-x-[15deg] mt-2">Rank</span>
+                    </div>
+                    <div className="w-1/3 flex flex-col items-center justify-center p-6 bg-zinc-950/80 border border-white/5">
+                        <span className="text-5xl font-black font-headline italic tracking-tighter skew-x-[15deg] text-white">402</span>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-zinc-600 skew-x-[15deg] mt-2">Echoes_Voided</span>
+                    </div>
+                    <div className="w-1/3 flex flex-col items-center justify-center p-6 bg-zinc-950/80 border border-white/5">
+                        <span className="text-5xl font-black font-headline italic tracking-tighter skew-x-[15deg] text-white">MAX</span>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-zinc-600 skew-x-[15deg] mt-2">Combo</span>
+                    </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Call to Actions */}
-            <div className="mt-16 flex flex-col md:flex-row gap-6 w-full max-w-2xl text-zinc-950">
-              <button 
-                onClick={onMenu}
-                style={{ pointerEvents: 'auto' }}
-                className="flex-1 px-8 py-5 border border-zinc-500/30 text-white font-headline font-bold tracking-widest hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 group z-50 cursor-pointer"
-              >
-                <span className="material-symbols-outlined group-hover:animate-spin">refresh</span>
-                ABORT MISSION
-              </button>
+                {/* Bottom Action Bar */}
+                <div className="flex w-full mt-8 gap-4 h-16">
+                    <button 
+                        onClick={onRetry}
+                        className="flex-1 border border-white/20 bg-zinc-950/50 hover:bg-white/5 transition-colors -skew-x-[15deg] flex items-center justify-center group"
+                    >
+                        <div className="skew-x-[15deg] flex items-center gap-4 text-zinc-400 group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-lg">replay</span>
+                            <span className="text-[10px] font-black font-headline uppercase tracking-[0.2em]">Retry_Simulation</span>
+                        </div>
+                    </button>
 
-              <button 
-                onClick={onNext}
-                style={{ pointerEvents: 'auto' }}
-                className="flex-[1.5] px-8 py-5 bg-theme-primary text-zinc-950 font-headline font-black tracking-[0.2em] hover:scale-105 transition-transform flex items-center justify-center gap-3 relative overflow-hidden group shadow-[0_10px_40px_rgba(var(--theme-primary),0.3)] z-50 cursor-pointer"
-              >
-                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-[-20deg]"></div>
-                NEXT MISSION
-                <span className="material-symbols-outlined">chevron_right</span>
-              </button>
-            </div>
+                    <button 
+                        onClick={onNextLevel}
+                        className="flex-[1.5] bg-white hover:bg-zinc-200 transition-colors -skew-x-[15deg] flex items-center justify-center group shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                    >
+                        <div className="skew-x-[15deg] flex items-center gap-4 text-zinc-950">
+                            <span className="material-symbols-outlined text-lg">fast_forward</span>
+                            <span className="text-[12px] font-black font-headline uppercase tracking-[0.2em]">Next_Sector</span>
+                        </div>
+                    </button>
+
+                    <button 
+                        onClick={onReturnToHub}
+                        className="flex-1 border border-white/10 bg-zinc-950 hover:bg-white/5 transition-colors -skew-x-[15deg] flex items-center justify-center group"
+                    >
+                        <div className="skew-x-[15deg] flex items-center gap-4 text-zinc-600 group-hover:text-zinc-400 transition-colors">
+                            <span className="material-symbols-outlined text-lg text-zinc-700 group-hover:text-zinc-500">home</span>
+                            <span className="text-[9px] font-black font-headline uppercase tracking-[0.2em]">Return_To_Hub</span>
+                        </div>
+                    </button>
+                </div>
+
+            </main>
         </div>
-      </main>
-
-      {/* Side Decoration Readouts */}
-      <aside className="fixed right-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-8 opacity-40 z-50 pointer-events-none">
-        <div className="text-right">
-          <p className="font-headline text-[10px] text-theme-primary uppercase">LATENCY_STABLE</p>
-          <p className="font-headline font-bold text-xs text-white">0.002ms</p>
-        </div>
-        <div className="text-right">
-          <p className="font-headline text-[10px] text-theme-secondary uppercase">ENCRYPTION_LEVEL</p>
-          <p className="font-headline font-bold text-xs text-white">OMEGA-7</p>
-        </div>
-        <div className="text-right">
-          <p className="font-headline text-[10px] text-theme-primary uppercase">DRIFT_DEPTH</p>
-          <p className="font-headline font-bold text-xs text-white">4,800m</p>
-        </div>
-      </aside>
-    </div>
-  );
+    );
 };
 
 export default MissionSuccess;

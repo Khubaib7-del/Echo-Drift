@@ -23,19 +23,90 @@ export class GameApp {
    private isGrounded = false;
    private isGameOver = false;
    public onStabilityUpdate?: (stability: number) => void;
-   private stabilityCounter = 0;
+   private currentStability = 100;
    private lastStability = -1;
    public onVelocityUpdate?: (velocity: number) => void;
    private lastVelocity = -1;
 
+   public onDashUpdate?: (cooldown: number) => void;
+   public onProximityUpdate?: (distance: number) => void;
+   public onProgressUpdate?: (progress: number) => void;
+
+   private shakeTime = 0;
+   private shakeAmount = 0;
+
+   // Dash Protocol
+   private dashCooldown = 0;
+   private readonly dashDuration = 10; // frames
+   private dashTime = 0;
+   private dashVelocity = { x: 0, y: 0 };
+   private isDashing = false;
+
+    // Stats for Telemetry
+    private maxVelocityObserved = 0;
+    private closeCallCount = 0;
+    private dashCount = 0;
+    private hasReachedCloseRange = false;
+
+   private particles: { graphics: PIXI.Graphics, vx: number, vy: number, life: number }[] = [];
+
+   private triggerShake(amount: number) {
+       this.shakeTime = 15; // 0.25s
+       this.shakeAmount = amount;
+   }
+
+   private spawnParticles(x: number, y: number, color: number, count: number) {
+       for (let i = 0; i < count; i++) {
+           const p = new PIXI.Graphics();
+           p.rect(0, 0, 4, 4);
+           p.fill(color);
+           p.x = x;
+           p.y = y;
+           this.particles.push({
+               graphics: p,
+               vx: (Math.random() - 0.5) * 10,
+               vy: (Math.random() - 0.5) * 10,
+               life: 1.0
+           });
+           this.app.stage.addChild(p);
+       }
+   }
+
+   private performDash() {
+       if (!this.player || this.dashCooldown > 0 || this.isDashing) return;
+       this.isDashing = true;
+       this.dashTime = this.dashDuration;
+       this.dashCooldown = 60; // 1 second cooldown
+       this.dashCount++;
+       const dir = this.keys['arrowright'] || this.keys['d'] ? 1 : (this.keys['arrowleft'] || this.keys['a'] ? -1 : 0);
+       this.dashVelocity = { x: dir * 20, y: 0 };
+       this.spawnParticles(this.player.x, this.player.y, 0xffffff, 10);
+   }
+
    // Level specific mechanics
    private levelData!: LevelData;
-   private platforms: { graphics: PIXI.Graphics, rect: import('./levels').Rect, type: 'stable' | 'fragile', isCrumbling: boolean, crumbleTimer: number, isGone: boolean }[] = [];
+   private platforms: { 
+     graphics: PIXI.Graphics, 
+     rect: import('./levels').Rect, 
+     type: 'stable' | 'fragile' | 'trap' | 'moving', 
+     isCrumbling: boolean, 
+     crumbleTimer: number, 
+     isGone: boolean,
+     trapTimer: number,
+     isTrapOpen: boolean
+   }[] = [];
+   private movingPlatforms: {
+     graphics: PIXI.Graphics,
+     data: import('./levels').MovingPlatformData,
+     originX: number,
+     originY: number,
+     time: number
+   }[] = [];
    private doors: { graphics: PIXI.Graphics, rect: Rect, isOpen: boolean }[] = [];
    private buttons: { graphics: PIXI.Graphics, rect: Rect, targetDoorIndex: number, isPressed: boolean }[] = [];
    private goalGraphics!: PIXI.Graphics;
    private hazards: PIXI.Graphics[] = [];
-   private enemies: { graphics: PIXI.Graphics, data: import('./levels').EnemyData, originX: number }[] = [];
+   private enemies: { graphics: PIXI.Graphics, data: import('./levels').EnemyData, originX: number, originY: number, time: number }[] = [];
    private collectibles: { graphics: PIXI.Graphics, data: import('./levels').CollectibleData }[] = [];
 
    constructor() {
@@ -58,26 +129,39 @@ export class GameApp {
       this.setupInput();
 
       this.app.ticker.add((time) => {
-         if (this.levelData && !this.isGameOver) this.update(time.deltaTime);
+         if (this.levelData && !this.isGameOver && !this.isPaused) this.update(time.deltaTime);
       });
    }
 
-   public loadLevel(levelIndex: number) {
-      this.currentLevelIndex = levelIndex;
-      this.levelData = LEVELS[levelIndex - 1] || LEVELS[0];
+   private isPaused = true;
 
-      // Clear previous
-      this.platforms.forEach(p => p.graphics.destroy());
-      this.doors.forEach(d => d.graphics.destroy());
-      this.buttons.forEach(b => b.graphics.destroy());
-      this.hazards.forEach(h => h.destroy());
-      this.enemies.forEach(e => e.graphics.destroy());
-      this.collectibles.forEach(c => c.graphics.destroy());
-      if (this.goalGraphics) this.goalGraphics.destroy();
-      if (this.player) this.player.destroy();
-      if (this.echo) this.echo.destroy();
+   public stopGame() {
+      this.isPaused = true;
+   }
+
+   public loadLevel(levelIndex: number) {
+    this.isPaused = false;
+    this.currentLevelIndex = levelIndex;
+    this.levelData = LEVELS[levelIndex - 1] || LEVELS[0];
+
+    // Scale echo delay: starts at 3.5s (210 frames), drops to 1s (60 frames) at level 55
+    const delayFrames = Math.max(60, 210 - (levelIndex - 1) * 2.8);
+    this.timelineDelay = Math.floor(delayFrames);
+
+    // Clear previous
+    this.platforms.forEach(p => p.graphics?.destroy());
+    this.movingPlatforms.forEach(p => p.graphics?.destroy());
+    this.doors.forEach(d => d.graphics?.destroy());
+    this.buttons.forEach(b => b.graphics?.destroy());
+    this.hazards.forEach(h => h?.destroy());
+    this.enemies.forEach(e => e.graphics?.destroy());
+    this.collectibles.forEach(c => c.graphics?.destroy());
+    if (this.goalGraphics) this.goalGraphics.destroy();
+    if (this.player) this.player.destroy();
+    if (this.echo) this.echo.destroy();
 
       this.platforms = [];
+      this.movingPlatforms = [];
       this.doors = [];
       this.buttons = [];
       this.hazards = [];
@@ -104,10 +188,41 @@ export class GameApp {
       this.levelData.platforms.forEach(p => {
          const g = new PIXI.Graphics();
          g.rect(p.x, p.y, p.w, p.h);
-         g.fill(p.type === 'fragile' ? 0x2b2b10 : 0x1b1b20); // Fragile platforms are brownish
-         g.stroke({ width: 2, color: p.type === 'fragile' ? 0xaaaa00 : 0x006970 });
-         this.platforms.push({ graphics: g, rect: { ...p }, type: p.type || 'stable', isCrumbling: false, crumbleTimer: 0, isGone: false });
+         
+         let color = 0x1b1b20;
+         let stroke = 0x006970;
+         if (p.type === 'fragile') { color = 0x2b2b10; stroke = 0xaaaa00; }
+         if (p.type === 'trap') { color = 0x2b1010; stroke = 0xaa0000; }
+         
+         g.fill(color);
+         g.stroke({ width: 2, color: stroke });
+         this.platforms.push({ 
+            graphics: g, 
+            rect: { ...p }, 
+            type: p.type || 'stable', 
+            isCrumbling: false, 
+            crumbleTimer: 0, 
+            isGone: false,
+            trapTimer: 0,
+            isTrapOpen: false
+         });
          this.app.stage.addChild(g);
+      });
+
+      // Moving Platforms
+      this.levelData.movingPlatforms?.forEach(p => {
+          const g = new PIXI.Graphics();
+          g.rect(0, 0, p.w, p.h);
+          g.fill(0x102b2b);
+          g.stroke({ width: 2, color: 0x00aaaa });
+          this.movingPlatforms.push({
+              graphics: g,
+              data: { ...p },
+              originX: p.x,
+              originY: p.y,
+              time: Math.random() * 100
+          });
+          this.app.stage.addChild(g);
       });
 
       // Doors
@@ -147,12 +262,16 @@ export class GameApp {
       // Enemies
       this.levelData.enemies.forEach(e => {
          const g = new PIXI.Graphics();
-         g.rect(0, 0, e.w, e.h);
+         if (e.type === 'spike') {
+             g.poly([0, e.h, e.w / 2, 0, e.w, e.h]);
+         } else {
+             g.rect(0, 0, e.w, e.h);
+         }
          g.x = e.x;
          g.y = e.y;
-         g.fill({ color: 0xff00ff, alpha: 0.9 });
+         g.fill({ color: e.type === 'flyer' ? 0xffff00 : 0xff00ff, alpha: 0.9 });
          g.stroke({ color: 0xffffff, width: 1 });
-         this.enemies.push({ graphics: g, data: { ...e }, originX: e.x });
+         this.enemies.push({ graphics: g, data: { ...e }, originX: e.x, originY: e.y, time: Math.random() * 100 });
          this.app.stage.addChild(g);
       });
 
@@ -184,6 +303,28 @@ export class GameApp {
       this.app.stage.addChild(this.player);
    }
 
+   public getDashCooldown() { return this.dashCooldown; }
+   public getEchoDistance() {
+       if (!this.player || !this.echo) return 1000;
+       const dx = this.player.x - this.echo.x;
+       const dy = this.player.y - this.echo.y;
+       return Math.sqrt(dx*dx + dy*dy);
+   }
+   public getProgress() {
+       if (!this.levelData || !this.player) return 0;
+       const total = this.levelData.goal.x - this.levelData.spawn.x;
+       const current = this.player.x - this.levelData.spawn.x;
+       return Math.max(0, Math.min(1, current / total));
+   }
+
+   public getMissionStats() {
+       return {
+           maxVelocity: this.maxVelocityObserved,
+           closeCalls: this.closeCallCount,
+           dashCount: this.dashCount
+       };
+   }
+
    private triggerGameOver() {
       this.isGameOver = true;
       if (this.onFailCallback) this.onFailCallback();
@@ -197,18 +338,19 @@ export class GameApp {
       this.echo.x = this.player.x;
       this.echo.y = this.player.y;
       this.isGameOver = false;
+      this.currentStability = 100;
 
       // Reset Camera
       this.app.stage.x = 0;
 
-      // Reset fragile platforms
+      // Reset platforms
       this.platforms.forEach(p => {
-         if (p.type === 'fragile') {
-            p.isCrumbling = false;
-            p.crumbleTimer = 0;
-            p.isGone = false;
-            p.graphics.alpha = 1;
-         }
+          p.isCrumbling = false;
+          p.crumbleTimer = 0;
+          p.isGone = false;
+          p.isTrapOpen = false;
+          p.trapTimer = 0;
+          p.graphics.alpha = 1;
       });
 
       // Respawn uncollected gems
@@ -216,6 +358,12 @@ export class GameApp {
          c.data.collected = false;
          c.graphics.visible = true;
       });
+
+      // Reset Stats
+      this.dashCount = 0;
+      this.closeCallCount = 0;
+      this.maxVelocityObserved = 0;
+      this.hasReachedCloseRange = false;
    }
 
    private setupInput() {
@@ -237,63 +385,144 @@ export class GameApp {
          this.keys['m'] = false;
       }
 
-      // Movement
-      if (this.keys['arrowright'] || this.keys['d']) this.velocity.x = this.speed;
-      else if (this.keys['arrowleft'] || this.keys['a']) this.velocity.x = -this.speed;
-      else this.velocity.x = 0;
+       // Dash Trigger
+       if (this.keys['shift']) this.performDash();
+       if (this.dashCooldown > 0) this.dashCooldown -= dt;
+       if (this.dashTime > 0) {
+           this.dashTime -= dt;
+           this.velocity.x = this.dashVelocity.x;
+           this.velocity.y = this.dashVelocity.y;
+           if (this.dashTime <= 0) this.isDashing = false;
+       }
 
-      // Jump
-      if ((this.keys['arrowup'] || this.keys['w'] || this.keys[' ']) && this.isGrounded) {
-         this.velocity.y = this.jumpStrength;
-         this.isGrounded = false;
-      }
+       // Momentum-based Movement
+       const accel = 0.6;
+       const friction = 0.85;
+       const maxSpeed = this.speed;
 
-      // Gravity
-      this.velocity.y += this.gravity * dt;
+       if (!this.isDashing) {
+           if (this.keys['arrowright'] || this.keys['d']) {
+               this.velocity.x += accel;
+               if (this.velocity.x > maxSpeed) this.velocity.x = maxSpeed;
+           } else if (this.keys['arrowleft'] || this.keys['a']) {
+               this.velocity.x -= accel;
+               if (this.velocity.x < -maxSpeed) this.velocity.x = -maxSpeed;
+           } else {
+               this.velocity.x *= friction;
+               if (Math.abs(this.velocity.x) < 0.1) this.velocity.x = 0;
+           }
+       }
+ 
+       // Jump
+       if ((this.keys['arrowup'] || this.keys['w'] || this.keys[' ']) && this.isGrounded && !this.isDashing) {
+          this.velocity.y = this.jumpStrength;
+          this.isGrounded = false;
+          this.triggerShake(2); // Small jump shake
+       }
+ 
+       // Gravity
+       if (!this.isDashing) this.velocity.y += this.gravity * dt;
+ 
+       // Move X
+       this.player.x += this.velocity.x * dt;
+       this.resolveCollisions(true);
+ 
+       // Move Y
+       this.player.y += this.velocity.y * dt;
+       const wasGrounded = this.isGrounded;
+       this.isGrounded = false;
+       this.resolveCollisions(false);
+       
+       // Impact Shake
+       if (this.isGrounded && !wasGrounded && this.velocity.y > 5) {
+           this.triggerShake(this.velocity.y * 0.5);
+       }
 
-      // Move X
-      this.player.x += this.velocity.x * dt;
-      this.resolveCollisions(true);
+       // Particle Update
+       this.particles.forEach((p, idx) => {
+           p.graphics.x += p.vx * dt;
+           p.graphics.y += p.vy * dt;
+           p.life -= 0.05 * dt;
+           p.graphics.alpha = p.life;
+           if (p.life <= 0) {
+               p.graphics.destroy();
+               this.particles.splice(idx, 1);
+           }
+       });
 
-      // Move Y
-      this.player.y += this.velocity.y * dt;
-      this.isGrounded = false;
-      this.resolveCollisions(false);
-
-      // Camera Follow (Horizontal)
+      // Camera Follow (Horizontal) with Shake
       const targetX = (window.innerWidth / 2) - this.player.x;
       this.app.stage.x += (targetX - this.app.stage.x) * 0.1;
+      
+      if (this.shakeTime > 0) {
+          this.shakeTime -= dt;
+          this.app.stage.x += (Math.random() - 0.5) * this.shakeAmount;
+          this.app.stage.y = (Math.random() - 0.5) * this.shakeAmount;
+      } else {
+          this.app.stage.y = 0;
+      }
 
       // Game Logic Checks
       this.updateEchoLogic();
+      this.updatePlatforms(dt);
       this.updateEnemies(dt);
       this.updateCollectibles(dt);
       this.checkInteractions(dt);
 
-      // Dynamic Stability based on movement
-      this.stabilityCounter += dt;
-      if (this.stabilityCounter > 10) { // Throttle updates
-         this.stabilityCounter = 0;
-         const playerSpeed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-         // Speed ~0 -> 100%. Speed ~13 -> 25%
-         const stability = Math.max(20, Math.min(100, 100 - (playerSpeed / 13) * 80));
-         const rawVal = Math.floor(stability);
-         if (rawVal !== this.lastStability) {
-            this.lastStability = rawVal;
-            if (this.onStabilityUpdate) this.onStabilityUpdate(rawVal);
-         }
-         const displayVel = parseFloat((playerSpeed * 6.8).toFixed(1)); // Make it peak around 88.4 KM/S when fast
-         if (displayVel !== this.lastVelocity) {
-            this.lastVelocity = displayVel;
-            if (this.onVelocityUpdate) this.onVelocityUpdate(displayVel);
-         }
+      // Stats tracking
+      const currentVel = Math.abs(this.velocity.x);
+      if (currentVel > this.maxVelocityObserved) this.maxVelocityObserved = currentVel;
+      
+      const dist = this.getEchoDistance();
+      if (dist < 120) {
+          if (!this.hasReachedCloseRange) {
+              this.closeCallCount++;
+              this.hasReachedCloseRange = true;
+          }
+      } else {
+          this.hasReachedCloseRange = false;
+      }
+
+      // HUD Updates
+      if (this.onDashUpdate) this.onDashUpdate(this.dashCooldown);
+      if (this.onProximityUpdate) this.onProximityUpdate(this.getEchoDistance());
+      if (this.onProgressUpdate) this.onProgressUpdate(this.getProgress());
+
+      // Dynamic Stability (Temporal Sync System)
+      let drainRate = 0.8; // Base drain for time spent
+      
+      if (dist < 200) {
+          // Intense drain when echo is near
+          drainRate += ((200 - dist) / 200) * 10;
+      }
+
+      this.currentStability -= drainRate * (dt / 60);
+      if (this.currentStability <= 0) {
+          this.currentStability = 0;
+          if (!this.isGameOver) this.triggerGameOver();
+      }
+
+      const rawVal = Math.max(0, Math.min(100, this.currentStability));
+      if (Math.abs(rawVal - this.lastStability) > 0.5) {
+         this.lastStability = rawVal;
+         if (this.onStabilityUpdate) this.onStabilityUpdate(rawVal);
+      }
+
+      const playerSpeed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+      const displayVel = parseFloat((playerSpeed * 6.8).toFixed(1));
+      if (displayVel !== this.lastVelocity) {
+         this.lastVelocity = displayVel;
+         if (this.onVelocityUpdate) this.onVelocityUpdate(displayVel);
       }
    }
 
    private getActiveColliders(): import('./levels').Rect[] {
       const list: import('./levels').Rect[] = [];
       this.platforms.forEach(p => {
-         if (!p.isGone) list.push(p.rect);
+         if (!p.isGone && !p.isTrapOpen) list.push(p.rect);
+      });
+      this.movingPlatforms.forEach(p => {
+          list.push({ x: p.graphics.x, y: p.graphics.y, w: p.data.w, h: p.data.h });
       });
       this.doors.forEach(d => {
          if (!d.isOpen) list.push(d.rect);
@@ -308,17 +537,14 @@ export class GameApp {
       for (const c of colliders) {
          if (this.checkOverlap(playerRect, c)) {
             if (isXAxis) {
-               // Resolve X
                if (this.velocity.x > 0) this.player.x = c.x - playerRect.w;
                else if (this.velocity.x < 0) this.player.x = c.x + c.w;
                this.velocity.x = 0;
             } else {
-               // Resolve Y
                if (this.velocity.y > 0) {
                   this.player.y = c.y - playerRect.h;
                   this.isGrounded = true;
 
-                  // If landing on a fragile platform, trigger crumble
                   const pRef = this.platforms.find(p => p.rect === c);
                   if (pRef && pRef.type === 'fragile' && !pRef.isCrumbling) {
                      pRef.isCrumbling = true;
@@ -328,11 +554,46 @@ export class GameApp {
                }
                this.velocity.y = 0;
             }
-            // Update react locally so following loop iterations use the resolved position
             playerRect.x = this.player.x;
             playerRect.y = this.player.y;
          }
       }
+   }
+
+   private updatePlatforms(dt: number) {
+       // Moving Platforms
+       this.movingPlatforms.forEach(p => {
+           p.time += dt * 0.02 * p.data.speed;
+           const oldX = p.graphics.x;
+           const oldY = p.graphics.y;
+           
+           p.graphics.x = p.originX + Math.sin(p.time) * (p.data.rangeX || 0);
+           p.graphics.y = p.originY + Math.cos(p.time) * (p.data.rangeY || 0);
+           
+           // Carry player
+           if (this.isGrounded) {
+               const playerRect = { x: this.player.x, y: this.player.y + 1, w: 40, h: 80 };
+               const platformRect = { x: oldX, y: oldY, w: p.data.w, h: p.data.h };
+               if (this.checkOverlap(playerRect, platformRect)) {
+                   this.player.x += p.graphics.x - oldX;
+                   this.player.y += p.graphics.y - oldY;
+               }
+           }
+       });
+
+       // Trap Platforms
+       this.platforms.forEach(p => {
+           if (p.type === 'trap') {
+               p.trapTimer += dt;
+               if (p.trapTimer > 120) { // Every 2 seconds
+                   p.isTrapOpen = !p.isTrapOpen;
+                   p.trapTimer = 0;
+                   p.graphics.alpha = p.isTrapOpen ? 0.1 : 1;
+               } else if (p.trapTimer > 90) { // Warning flicker
+                   p.graphics.alpha = (Math.floor(p.trapTimer / 5) % 2 === 0) ? 1 : 0.5;
+               }
+           }
+       });
    }
 
    private updateEchoLogic() {
@@ -354,14 +615,23 @@ export class GameApp {
       const patrolDistance = 100;
 
       for (const enemy of this.enemies) {
-         enemy.data.x += enemy.data.vx * dt;
-
-         // Reverse if out of bounds
-         if (enemy.data.x > enemy.originX + patrolDistance || enemy.data.x < enemy.originX - patrolDistance) {
-            enemy.data.vx *= -1;
+         if (enemy.data.type === 'flyer') {
+             enemy.time += dt * 0.05;
+             enemy.data.x += enemy.data.vx * dt;
+             enemy.data.y = enemy.originY + Math.sin(enemy.time) * (enemy.data.rangeY || 50);
+             
+             if (enemy.data.x > enemy.originX + patrolDistance * 2 || enemy.data.x < enemy.originX - patrolDistance * 2) {
+                 enemy.data.vx *= -1;
+             }
+         } else if (enemy.data.type === 'patrol') {
+             enemy.data.x += enemy.data.vx * dt;
+             if (enemy.data.x > enemy.originX + patrolDistance || enemy.data.x < enemy.originX - patrolDistance) {
+               enemy.data.vx *= -1;
+             }
          }
-
+         
          enemy.graphics.x = enemy.data.x;
+         enemy.graphics.y = enemy.data.y;
 
          // Hit detection
          if (this.checkOverlap(pRect, enemy.data)) {
@@ -375,11 +645,10 @@ export class GameApp {
       const pRect = { x: this.player.x, y: this.player.y, w: 40, h: 80 };
       for (const c of this.collectibles) {
          if (!c.data.collected) {
-            c.graphics.rotation += 0.05 * dt; // Rotate the gem
+            c.graphics.rotation += 0.05 * dt;
             if (this.checkOverlap(pRect, c.data)) {
                c.data.collected = true;
                c.graphics.visible = false;
-               // (Optional) Here we could emit an event to increment a score state
             }
          }
       }
@@ -389,10 +658,7 @@ export class GameApp {
       const pRect = { x: this.player.x, y: this.player.y, w: 40, h: 80 };
       const eRect = { x: this.echo.x, y: this.echo.y, w: 40, h: 80 };
 
-      // Echo Paradox Hazard (Lethal Echo)
-      // Give buffer so echo doesn't kill you instantly on spawn
       if (this.history.length > this.timelineDelay - 10) {
-         // Create a slightly smaller inner hitbox so it's not unfairly instant death on tight corners
          const eRectCore = { x: this.echo.x + 10, y: this.echo.y + 10, w: 20, h: 60 };
          if (this.checkOverlap(pRect, eRectCore)) {
             this.triggerGameOver();
@@ -404,12 +670,11 @@ export class GameApp {
       this.platforms.forEach(p => {
          if (p.type === 'fragile' && p.isCrumbling && !p.isGone) {
             p.crumbleTimer += dt;
-            // Shake effect
-            p.graphics.x = (Math.random() - 0.5) * 4;
-            // Fall after ~60 frames
+            p.graphics.x = p.rect.x + (Math.random() - 0.5) * 4;
             if (p.crumbleTimer > 60) {
                p.isGone = true;
                p.graphics.alpha = 0;
+               this.triggerShake(10); // Sudden drop shake
             } else if (p.crumbleTimer > 40) {
                p.graphics.alpha = 0.5;
             }
@@ -422,7 +687,6 @@ export class GameApp {
          b.isPressed = isPressed;
          b.graphics.alpha = isPressed ? 1 : 0.5;
 
-         // Map to Door
          const targetDoor = this.doors[b.targetDoorIndex];
          if (targetDoor) {
             targetDoor.isOpen = isPressed;
@@ -440,7 +704,7 @@ export class GameApp {
 
       if (this.checkOverlap(pRect, this.levelData.goal)) {
          if (this.onWinCallback && !this.isGameOver) {
-            this.isGameOver = true; // PAUSE THE GAME so player doesn't fall off in the background!
+            this.isGameOver = true;
             this.onWinCallback(this.currentLevelIndex);
          }
       }

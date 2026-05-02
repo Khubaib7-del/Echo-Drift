@@ -4,137 +4,165 @@ interface HUDProps {
     activeLevel: number;
     stability: number;
     velocity?: number;
+    dashCooldown: number;
+    echoDistance: number;
+    missionProgress: number;
 }
 
-const HUD: React.FC<HUDProps> = ({ activeLevel, stability, velocity = 0 }) => {
+const HUD: React.FC<HUDProps> = ({ 
+    activeLevel, stability, velocity = 0, 
+    dashCooldown, echoDistance, missionProgress 
+}) => {
     const [timer, setTimer] = useState(0);
 
     useEffect(() => {
-        const i = setInterval(() => setTimer(t => t + 1), 1000);
+        const i = setInterval(() => setTimer(t => t + 10), 10);
         return () => clearInterval(i);
-    }, [activeLevel]); // Reset timer when level changes
+    }, [activeLevel]);
 
-    const formatTime = (seconds: number) => {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    const formatTime = (ms: number) => {
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const milliseconds = ms % 1000;
+        return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}:${milliseconds.toString().padStart(3, '0')}`;
     };
 
-    const sectorId = Math.floor((activeLevel - 1) / 5) + 1;
-    const levelInSector = ((activeLevel - 1) % 5) + 1;
+    const proximityPercent = Math.max(0, Math.min(100, (1 - (echoDistance / 800)) * 100));
 
     return (
-        <div className="absolute inset-0 pointer-events-none z-10 w-full h-full font-body text-white selection:bg-cyan-400 selection:text-zinc-950 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-10 w-full h-full font-body text-white overflow-hidden">
+            
+            {/* Background Texture (Space/Galaxy simulation) */}
+            <div className="absolute inset-0 z-[-1] opacity-40 mix-blend-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-zinc-800 via-black to-black"></div>
+            
+            {/* Crosshair / Center Target */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center opacity-30">
+                <div className="w-64 h-64 border border-white/10 rounded-full absolute"></div>
+                <div className="w-8 h-[1px] bg-white absolute"></div>
+                <div className="h-8 w-[1px] bg-white absolute"></div>
+                <div className="absolute top-8 left-8 w-4 h-4 border border-white rotate-45"></div>
+            </div>
+            
+            {/* Center Data (Coordinates) */}
+            <div className="absolute top-[40%] left-[55%] text-[8px] font-mono text-zinc-500 uppercase tracking-widest leading-tight opacity-50">
+                X: +15.229<br/>
+                Y: -02.541<br/>
+                Z: +89.006
+            </div>
 
-            {/* Background Images Layer */}
-            <div className="absolute inset-0 flex opacity-20 pointer-events-none z-[-1]">
-                <div className="w-1/2 h-full relative overflow-hidden border-r border-cyan-400/20">
-                    <img
-                        className="w-full h-full object-cover mix-blend-screen"
-                        alt="Present Timeline City"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7RC5GH-f_wtfcDdTyf6qmA-7KTb5RPcmGnHtm1gIfYJC6LzUcE3bvzfPlbw6mEvIDX7jODW82wxPJNnO1EI2B9iMP63skC1TtM7xoBNGpGE_IBltl0Qj0Cwwyd9sIQtQ_SGmKPHTfQUbDJjdKrnBiVb74vBqfVCq4YX8T77AAfEwMAiBqoGH2VWd8271gs6wsj-ecrbSh2dbuBGRrI3943a90WEzF3tS7lN366Bf7rWWgIJC_ykuBrc33vMMK8SEIcRPWBmDfKnZs"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 to-transparent"></div>
+            {/* TOP CENTER: VELOCITY */}
+            <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                <span className="text-[10px] font-mono uppercase tracking-[0.5em] text-zinc-500 mb-2">Velocity</span>
+                <div className="text-8xl font-black font-headline italic tracking-tighter leading-none tabular-nums flex items-baseline">
+                    {Math.floor(velocity).toLocaleString()}
+                    <span className="text-4xl text-zinc-400">.{(velocity % 1).toFixed(1).substring(2)}</span>
                 </div>
-                <div className="w-1/2 h-full relative overflow-hidden">
-                    <img
-                        className="w-full h-full object-cover grayscale opacity-60 mix-blend-color-dodge"
-                        alt="Echo Timeline Industrial"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIOzqjWvz2W505Kc72zEQTH75dqpYncFkH-w1VYmT0siA_d1Ktr5kagRX9jVvsujkoCs68R5LYo9LaA-qkZr4UQdovmbyn9cvYNYkcYO9CBZfEvp6YldOGXZ4SS2LqKyHv2K0Xj_O3qxA4yYI99VZreVkrYQbDPXPy3yt71dTFK0Me6hQFXVz-4T5Jn7AN34J9ZYzTh9EGm0jlXbMCdjoP6bQ63Uv89UFjrg67vZXr92IG6OZVPzdSFhQR2IjHHxJV9SjxgoplOs9G"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-l from-magenta-400/10 to-transparent"></div>
+                <div className="mt-4 bg-white text-zinc-950 px-4 py-1 text-[10px] font-bold font-headline uppercase tracking-widest">
+                    KM / SEC
                 </div>
             </div>
 
-            {/* Scanline Overlay */}
-            <div className="scanline-overlay opacity-30"></div>
-
-            {/* Robot Image (Simulated in RIFT screen) */}
-            <div className="absolute bottom-1/4 left-1/4 -translate-x-1/2 w-48 h-96 opacity-10 blur-[1px] pointer-events-none">
-                <img
-                    className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]"
-                    alt="Robot Silhouette"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7ofsQP27LBp5Bh9wm9fMnu648Nv40oAjv-gS-Jl5qMrrv896DUj8nThk31r9l1ImmSfAU-L8ncNF3ResCWUOlRV8lk6-72EgZPK38_ZmZDCpQtXKJmp4-vIWbijrB5VDre9btO9VwpDo79TtNQKHrQUd__yFphRB3yEhFaDxAd_zwUJotjHTZCE7yeaVWP-KStO4N9sEKwwyTJKwyH3yzGEvVJgYumEt898-KOahUtZSrlJFJqr4439bf_h1B2IlVMANen_Uz9fS7"
-                />
+            {/* TOP LEFT: STABILITY */}
+            <div className="absolute top-12 left-12 w-80">
+                <div className="relative p-4 -skew-x-[15deg] border border-white/20 bg-zinc-950/80 backdrop-blur">
+                    <div className="skew-x-[15deg]">
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400">Temporal Stability</span>
+                            <span className="text-[10px] font-bold font-headline">{stability.toFixed(1)}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-zinc-900 border border-white/10 p-[1px]">
+                            <div className="h-full bg-white transition-all duration-300" style={{ width: `${stability}%` }}></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Top Navigation */}
-            <header className="absolute top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 bg-transparent">
-                <div className="flex items-center gap-6">
-                    <h1 className="text-2xl font-black italic text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] font-headline uppercase tracking-[0.1em]">ECHO DRIFT</h1>
-                    <div className="h-[1px] w-24 bg-gradient-to-r from-cyan-400 to-transparent"></div>
-                    <div className="flex gap-4">
-                        <span className="text-cyan-300 border-b-2 border-cyan-400 pb-1 font-headline uppercase tracking-[0.1em] font-bold text-sm">SECTOR {sectorId} - LEVEL {levelInSector}</span>
+            {/* TOP RIGHT: RADAR & ECHO WARNING */}
+            <div className="absolute top-12 right-12 flex flex-col items-end gap-4 w-64">
+                <div className="relative w-full aspect-square border border-white/20 bg-zinc-950/80 backdrop-blur p-2">
+                    {/* Grid */}
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:1rem_1rem]"></div>
+                    {/* Center Point */}
+                    <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                    {/* Echo Dot */}
+                    <div 
+                        className="absolute w-2 h-2 bg-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.8)]"
+                        style={{ 
+                            top: `${50 + (echoDistance / 8)}%`, 
+                            left: `${50 + (echoDistance / 16)}%` 
+                        }}
+                    ></div>
+                    {/* Label */}
+                    <div className="absolute bottom-2 left-2 bg-white text-zinc-950 px-2 py-0.5 text-[8px] font-bold font-headline uppercase tracking-widest">
+                        RADAR_ACTIVE
                     </div>
                 </div>
-            </header>
 
-            {/* Left Info HUD */}
-            <aside className="absolute left-0 top-0 h-full flex flex-col z-40 w-64 pt-24 pb-12 opacity-80 pointer-events-none">
-                <div className="px-6 mb-12">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-cyan-400 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-zinc-950 font-variation-[FILL_1]">rocket_launch</span>
+                {proximityPercent > 50 && (
+                    <div className="relative w-[90%] p-3 -skew-x-[15deg] bg-red-500 border border-red-400 animate-pulse">
+                        <div className="skew-x-[15deg] text-center">
+                            <span className="text-[10px] font-black font-headline uppercase tracking-[0.2em] text-black">
+                                WARNING: ECHO NEARING
+                            </span>
                         </div>
-                        <div>
-                            <h2 className="text-cyan-400 font-bold font-headline tracking-tighter uppercase text-sm">SECTOR {sectorId}-{String.fromCharCode(64 + levelInSector)}</h2>
-                            <p className={`text-[10px] font-mono uppercase tracking-widest ${stability > 50 ? 'text-cyan-400/60' : 'text-magenta-400 animate-pulse'}`}>
-                                {stability === 100 ? 'TIMELINE_STABLE' : (stability > 50 ? 'TIMELINE_FLUCTUATING' : 'TIMELINE_FRACTURING!!')}
-                            </p>
-                        </div>
                     </div>
-                </div>
+                )}
+            </div>
 
-                <div className="px-6 mt-auto flex flex-col gap-1">
-                    <div className="text-cyan-400 font-headline font-black text-5xl tracking-tighter mb-1 drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]">T+ {formatTime(timer)}</div>
-                    <div className="flex flex-col font-mono text-[10px] text-cyan-400/60 leading-tight ml-1">
-                        <span>COORD: {Math.floor(Math.random() * 100)}.0912 // -{Math.floor(Math.random() * 200)}.2437</span>
-                        <span>VELOCITY: {velocity.toFixed(1)} KM/S</span>
-                    </div>
-                    <div className="text-[12px] text-cyan-400/80 uppercase tracking-widest ml-1 mt-1 font-bold">Synchronization Running</div>
-                </div>
-            </aside>
-
-            {/* RIGHT HUD Stats */}
-            <section className="absolute right-0 top-0 h-full w-72 flex flex-col items-end p-8 z-40 gap-8 pointer-events-none mt-20">
-                {/* Stability Gauge */}
-                <div className="pointer-events-auto flex flex-col items-center gap-2 p-6 bg-surface-container-low/60 backdrop-blur-md border-r-2 border-cyan-400">
-                    <div className="relative w-32 h-32 flex items-center justify-center">
-                        <svg className="w-full h-full transform -rotate-90">
-                            <circle className="text-zinc-600/30" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeWidth="2"></circle>
-                            <circle className="text-cyan-400 transition-all duration-300" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeDasharray="364.4" strokeDashoffset={364.4 * (1 - stability / 100)} strokeWidth="4"></circle>
-                        </svg>
-                        <div className="absolute flex flex-col items-center">
-                            <span className="text-3xl font-black font-headline text-cyan-400">{stability}%</span>
-                            <span className="text-[10px] font-label text-zinc-400 uppercase tracking-widest">STABILITY</span>
+            {/* BOTTOM CENTER: TIMER */}
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                <div className="relative p-6 px-12 -skew-x-[15deg] border border-white/10 bg-zinc-950/80 backdrop-blur border-t-2 border-t-white">
+                    <div className="skew-x-[15deg] flex flex-col items-center">
+                        <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-zinc-500 mb-2">Drift_Elapsed</span>
+                        <div className="text-5xl font-black font-headline tracking-tighter tabular-nums flex items-baseline">
+                            {formatTime(timer).split(':')[0]}:{formatTime(timer).split(':')[1]}
+                            <span className="text-2xl text-zinc-500">:{formatTime(timer).split(':')[2]}</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Drift Energy Bar */}
-                <div className="pointer-events-auto w-full p-4 bg-surface-container-low/60 backdrop-blur-md">
-                    <div className="flex justify-between items-end mb-2">
-                        <span className="text-[10px] font-label text-magenta-400 uppercase tracking-widest">DRIFT_ENERGY</span>
-                        <span className="text-xl font-black font-headline text-magenta-200">MAX</span>
-                    </div>
-                    <div className="h-3 w-full bg-surface-container-lowest relative overflow-hidden">
-                        <div className="absolute inset-y-0 left-0 bg-magenta-400 shadow-[0_0_15px_rgba(255,0,255,0.4)] w-[88%]"></div>
-                        <div className="absolute inset-y-0 left-0 w-full flex">
-                            {[0, 1, 2, 3].map(i => <div key={i} className="flex-1 border-r border-background/50"></div>)}
+            {/* BOTTOM LEFT: METRICS */}
+            <div className="absolute bottom-12 left-12 w-64">
+                <div className="relative p-4 -skew-x-[15deg] border border-white/10 bg-zinc-950/80 backdrop-blur">
+                    <div className="skew-x-[15deg] space-y-2 font-mono text-[9px] uppercase tracking-widest flex flex-col">
+                        <div className="flex justify-between">
+                            <span className="text-zinc-600">Thrust_Vector</span>
+                            <span className="text-white">Optimal</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-zinc-600">Core_Temp</span>
+                            <span className="text-white">441.2K</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-zinc-600">Shift_Index</span>
+                            <span className="text-red-500">0.89</span>
                         </div>
                     </div>
                 </div>
+                <div className="flex gap-2 mt-3 ml-2">
+                    <div className="w-2 h-2 bg-white/50"></div>
+                    <div className="w-2 h-2 bg-white/20"></div>
+                    <div className="w-2 h-2 bg-white/5"></div>
+                </div>
+            </div>
 
-                {/* Controls (Non-navbar version for player focus) */}
-                <div className="flex flex-col gap-4 mt-auto">
-                    <div className="flex gap-2">
-                        <div className="w-8 h-8 rounded-full bg-cyan-400 animate-pulse"></div>
-                        <span className="text-[10px] font-headline text-cyan-400 uppercase self-center">Node Alpha: Online</span>
+            {/* BOTTOM RIGHT: SYSTEM LABEL */}
+            <div className="absolute bottom-12 right-12 flex flex-col items-end gap-2">
+                <div className="text-sm font-black font-headline italic tracking-widest uppercase text-white">
+                    DRIFT_SYSTEM // OS_V.04
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-[8px] font-mono uppercase tracking-[0.4em] text-zinc-600">Encryption: Hardened</span>
+                    <div className="w-4 h-4 border border-zinc-600 flex items-center justify-center">
+                        <div className="w-2 h-2 bg-zinc-600"></div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            {/* NO BOTTOM NAVBAR HERE - IT HAS BEEN REMOVED TO PREVENT DISTRACTION DURING MISSION */}
+            {/* Atmosphere */}
+            <div className="scanline-overlay opacity-10"></div>
         </div>
     );
 };
